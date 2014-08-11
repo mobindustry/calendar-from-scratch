@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- calendar colors -->
+    <color name="newcal_gridcell_pressed">#bebebe</color>
+    <color name="newcal_gridcell_today">#774aac53</color>
+    <color name="newcal_gridcell_inactive">#ffe0e0e0</color>
+    <color name="newcal_gridcell_stroke">#ff82889a</color>
+    <color name="newcal_tabstrip_indicator">#034593</color>
+</resources>
