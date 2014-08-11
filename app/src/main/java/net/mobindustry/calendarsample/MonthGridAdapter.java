@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
@@ -19,9 +18,13 @@ public class MonthGridAdapter extends BaseAdapter {
     private String LOG_TAG;
 
     private Context context;
-    private DateTime dateTime;
-    private int cellsCount, emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
     private ArrayList<GridCellModel> days = new ArrayList<GridCellModel>();
+
+    public MonthGridAdapter(Context context, ArrayList<GridCellModel> daysList) {
+        LOG_TAG = this.getClass().getSimpleName();
+        this.context = context;
+        this.days = daysList;
+    }
 
     @Override
     public View getView(int position, View view, ViewGroup viewGroup) {
@@ -46,38 +49,9 @@ public class MonthGridAdapter extends BaseAdapter {
         return cellView;
     }
 
-    public void setDateTime(DateTime dateTime) {
-        this.dateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(), 0, 0, 0);
-        emptyCellsAtStart = this.dateTime.withDayOfMonth(1).getDayOfWeek() - 1;
-        daysInMonth = this.dateTime.dayOfMonth().getMaximumValue();
-        emptyCellsInTheEnd = 7 - this.dateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
-        cellsCount = emptyCellsAtStart + daysInMonth + emptyCellsInTheEnd;
-        initiateCellArray();
-    }
-
-    private void initiateCellArray() {
-        for(int i = 0; i < emptyCellsAtStart; i++) {
-            days.add(new GridCellModel());
-        }
-        for(int i = 0; i < daysInMonth; i++) {
-            GridCellModel mModel = new GridCellModel()
-                .setEmptyCell(false)
-                .setDateTime(dateTime.withDayOfMonth(i + 1));
-            days.add(mModel);
-        }
-        for(int i = 0; i < emptyCellsInTheEnd; i++) {
-            days.add(new GridCellModel());
-        }
-    }
-
-    public MonthGridAdapter(Context context) {
-        LOG_TAG = this.getClass().getSimpleName();
-        this.context = context;
-    }
-
     @Override
     public int getCount() {
-        return cellsCount;
+        return days.size();
     }
     @Override
     public Object getItem(int i) {

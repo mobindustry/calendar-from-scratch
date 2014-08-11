@@ -3,6 +3,10 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="calendar_tab_strip_textsize">14sp</dimen>
+    <dimen name="calendar_tab_strip_textsize">12sp</dimen>
+    <dimen name="weekday_textsize">12sp</dimen>
+    <dimen name="weekday_vertical_padding">2dp</dimen>
     <dimen name="gridcell_stroke_size">1px</dimen>
+    <dimen name="gridcell_daynumber_textsize">12sp</dimen>
+    <dimen name="gridcell_padding">1dp</dimen>
 </resources>

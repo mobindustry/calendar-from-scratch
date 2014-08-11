@@ -11,6 +11,10 @@ public class GridCellModel {
     private boolean isEmptyCell = false;
     private boolean isToday;
     private boolean isHoliday;
+
+    /**
+     * DateTime for this particular day. Is null by default, will remain null
+     */
     private DateTime dateTime;
 
     public GridCellModel() {
@@ -26,9 +30,11 @@ public class GridCellModel {
 
     public GridCellModel setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
+        this.isEmptyCell = false;
         DateTime now = DateTime.now();
         if(dateTime.getDayOfMonth() == now.getDayOfMonth() &&
-            dateTime.getMonthOfYear() == now.getMonthOfYear()) {
+            dateTime.getMonthOfYear() == now.getMonthOfYear()
+            && dateTime.getYear() == now.getYear()) {
             isToday = true;
         }
         return this;

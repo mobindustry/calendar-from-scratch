@@ -4,6 +4,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Locale;
 
@@ -38,6 +41,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
     private SlidingMonthFragment createFragment(int month) {
         SlidingMonthFragment mFragment = new SlidingMonthFragment();
         mFragment.setDateTime(calculateDateTime(month));
+        mFragment.setWeekdayNames(buildWeekdayNames());
         return mFragment;
     }
 
@@ -53,5 +57,16 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
             mDateTime = mDateTime.plusMonths(positionWithOffset);
         }
         return mDateTime;
+    }
+
+    private String[] buildWeekdayNames() {
+        String[] weekNames = new String[7];
+        for(int i = 0; i < weekNames.length; i++) {
+            DateTime dt = new DateTime().withDayOfWeek(i + 1);
+            DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE");
+            weekNames[i] = fmt.print(dt);
+        }
+
+        return weekNames;
     }
 }
