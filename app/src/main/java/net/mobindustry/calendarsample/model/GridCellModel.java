@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample;
+package net.mobindustry.calendarsample.model;
 
 import org.joda.time.DateTime;
 
@@ -11,6 +11,7 @@ public class GridCellModel {
     private boolean isEmptyCell = false;
     private boolean isToday;
     private boolean isHoliday;
+    private HolidayModel holiday;
 
     /**
      * DateTime for this particular day. Is null by default, will remain null
@@ -70,8 +71,13 @@ public class GridCellModel {
         return isHoliday;
     }
 
-    public GridCellModel setHoliday(boolean isHoliday) {
-        this.isHoliday = isHoliday;
+    public GridCellModel setHoliday(HolidayModel holiday) {
+        this.isHoliday = true;
+        this.holiday = holiday;
         return this;
+    }
+
+    public HolidayModel getHoliday() {
+        return holiday;
     }
 }

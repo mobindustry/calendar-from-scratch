@@ -7,7 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.RelativeLayout;
+import net.mobindustry.calendarsample.model.GridCellModel;
+import net.mobindustry.calendarsample.model.HolidayModel;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class SlidingMonthFragment extends Fragment {
     public String LOG_TAG;
     private DateTime dateTime;
     private String[] weekdayNames;
+    private ArrayList<HolidayModel> monthHolidays;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,9 +37,9 @@ public class SlidingMonthFragment extends Fragment {
         GridView weekdayGrid = (GridView) rootView.findViewById(R.id.weekday_grid);
         weekdayGrid.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.weekday_tv, weekdayNames));
 
-        GridView grid = (GridView) rootView.findViewById(R.id.month_grid);
+        GridView monthGrid = (GridView) rootView.findViewById(R.id.month_grid);
         MonthGridAdapter adapter = new MonthGridAdapter(getActivity(), initiateCellArray(dateTime));
-        grid.setAdapter(adapter);
+        monthGrid.setAdapter(adapter);
 
         return rootView;
     }
@@ -46,9 +48,16 @@ public class SlidingMonthFragment extends Fragment {
         this.dateTime = dateTime;
     }
 
+    public DateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setMonthHolidays(ArrayList<HolidayModel> monthHolidays) {
+        this.monthHolidays = monthHolidays;
+    }
+
     /**
-     * Sets this month's DateTime object, that will be used to build up whole month structure.
-     * Also calculates and sets up parameters, based on given DateTime.
+     * Based on this month's DateTime object calculates array of GridCellModel objects, that will be used to build grid.
      * @param dateTime
      */
     private ArrayList<GridCellModel> initiateCellArray(DateTime dateTime) {
@@ -65,6 +74,14 @@ public class SlidingMonthFragment extends Fragment {
         }
         for(int i = 0; i < daysInMonth; i++) {
             GridCellModel mModel = new GridCellModel().setDateTime(dateTime.withDayOfMonth(i + 1));
+            if(!monthHolidays.isEmpty()) {
+                for(HolidayModel mHolidayModel : monthHolidays) {
+                    if(mHolidayModel.getDate().withTimeAtStartOfDay()
+                        .equals(mModel.getDateTime().withTimeAtStartOfDay())) {
+                        mModel.setHoliday(mHolidayModel);
+                    }
+                }
+            }
             days.add(mModel);
         }
         for(int i = 0; i < emptyCellsInTheEnd; i++) {

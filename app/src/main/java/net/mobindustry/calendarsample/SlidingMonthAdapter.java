@@ -3,11 +3,12 @@ package net.mobindustry.calendarsample;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import net.mobindustry.calendarsample.model.HolidayModel;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -18,6 +19,8 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 
     private static final int NUM_PAGES = 30;
     public static final int OFFSET = 5;
+
+    private HolidayModel[] holidays;
 
     public SlidingMonthAdapter(FragmentManager mFragmentManager) {
         super(mFragmentManager);
@@ -42,6 +45,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         SlidingMonthFragment mFragment = new SlidingMonthFragment();
         mFragment.setDateTime(calculateDateTime(month));
         mFragment.setWeekdayNames(buildWeekdayNames());
+        mFragment.setMonthHolidays(prepareHolidaysForMonth(mFragment.getDateTime()));
         return mFragment;
     }
 
@@ -68,5 +72,23 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         }
 
         return weekNames;
+    }
+
+    public void setHolidays(HolidayModel[] holidays) {
+        this.holidays = holidays;
+    }
+
+    private ArrayList<HolidayModel> prepareHolidaysForMonth(DateTime currentDateTime) {
+        int currentYear, currentMonth;
+        currentYear = currentDateTime.getYear();
+        currentMonth = currentDateTime.getMonthOfYear();
+        ArrayList<HolidayModel> monthHolidays = new ArrayList<HolidayModel>();
+        for(HolidayModel mHolidayModel : holidays) {
+            if(mHolidayModel.getDate().getYear() == currentYear
+                && mHolidayModel.getDate().getMonthOfYear() == currentMonth) {
+                monthHolidays.add(mHolidayModel);
+            }
+        }
+        return monthHolidays;
     }
 }

@@ -1,11 +1,15 @@
 package net.mobindustry.calendarsample;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import net.mobindustry.calendarsample.model.GridCellModel;
 
 import java.util.ArrayList;
 
@@ -19,11 +23,13 @@ public class MonthGridAdapter extends BaseAdapter {
 
     private Context context;
     private ArrayList<GridCellModel> days = new ArrayList<GridCellModel>();
+    private int expectedMinimumHeight;
 
     public MonthGridAdapter(Context context, ArrayList<GridCellModel> daysList) {
         LOG_TAG = this.getClass().getSimpleName();
         this.context = context;
         this.days = daysList;
+        expectedMinimumHeight = getExpectedWidth() / 7;
     }
 
     @Override
@@ -44,8 +50,16 @@ public class MonthGridAdapter extends BaseAdapter {
             }
             if(day.isHoliday()) {
                 dateTv.setTextColor(context.getResources().getColor(android.R.color.holo_red_light));
+                dateTv.setTypeface(dateTv.getTypeface(), Typeface.BOLD);
+                TextView holidayName = new TextView(context);
+                holidayName.setText(day.getHoliday().getEnglishName());
+                holidayName.setTextSize(10);
+                holidayName.setMaxLines(2);
+                holidayName.setEllipsize(TextUtils.TruncateAt.END);
+                cellView.addView(holidayName);
             }
         }
+        cellView.setMinimumHeight(expectedMinimumHeight);
         return cellView;
     }
 
@@ -60,5 +74,11 @@ public class MonthGridAdapter extends BaseAdapter {
     @Override
     public long getItemId(int i) {
         return 0;
+    }
+
+    private int getExpectedWidth() {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels;
+        return (int) dpWidth + 2; // + 2 to make it a tiny little bit higher to avoid small vertical scroll
     }
 }

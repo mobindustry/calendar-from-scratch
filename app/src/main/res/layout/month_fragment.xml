@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/weekday_grid"
         android:numColumns="7"
+        android:drawingCacheQuality="high"
         />
 
 </RelativeLayout>
