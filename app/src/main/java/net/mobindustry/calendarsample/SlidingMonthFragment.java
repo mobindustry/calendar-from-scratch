@@ -1,12 +1,16 @@
 package net.mobindustry.calendarsample;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.Toast;
 import net.mobindustry.calendarsample.model.GridCellModel;
 import net.mobindustry.calendarsample.model.HolidayModel;
 import org.joda.time.DateTime;
@@ -23,6 +27,7 @@ public class SlidingMonthFragment extends Fragment {
     private DateTime dateTime;
     private String[] weekdayNames;
     private ArrayList<HolidayModel> monthHolidays;
+    private ArrayList<GridCellModel> cellModels;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,12 +39,46 @@ public class SlidingMonthFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.month_fragment, container, false);
 
+        cellModels = initiateCellArray(dateTime);
+
         GridView weekdayGrid = (GridView) rootView.findViewById(R.id.weekday_grid);
         weekdayGrid.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.weekday_tv, weekdayNames));
 
         GridView monthGrid = (GridView) rootView.findViewById(R.id.month_grid);
-        MonthGridAdapter adapter = new MonthGridAdapter(getActivity(), initiateCellArray(dateTime));
+        MonthGridAdapter adapter = new MonthGridAdapter(getActivity(), cellModels);
         monthGrid.setAdapter(adapter);
+
+        monthGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                GridCellModel touchedCell = cellModels.get(position);
+                if(!touchedCell.isEmptyCell()) {
+                    DateTime cellDateTime = touchedCell.getDateTime();
+                    String title, message;
+                    title = cellDateTime.toString("dd.MM.yyyy");
+                    message = cellDateTime.toString("dd MMMM yyyy");
+                    if(touchedCell.isToday()) {
+                        message += "\nToday";
+                    }
+                    if(touchedCell.isHoliday()) {
+                        message += "\n" + touchedCell.getHoliday().getEnglishName();
+                    }
+
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+                    dialogBuilder.setTitle(title)
+                        .setMessage(message)
+                        .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create().show();
+                } else {
+                    Toast.makeText(getActivity(), "Empty cell", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         return rootView;
     }

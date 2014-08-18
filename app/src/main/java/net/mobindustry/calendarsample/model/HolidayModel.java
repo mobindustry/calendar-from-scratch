@@ -16,6 +16,14 @@ public class HolidayModel {
         englishName = raw.getEnglishName();
     }
 
+    /**
+     * Use this have a non-empty holidays array in case if holidays loading failed.
+     */
+    public HolidayModel() {
+        date = DateTime.now().minusYears(100);
+        englishName = "";
+    }
+
     public DateTime getDate() {
         return date;
     }

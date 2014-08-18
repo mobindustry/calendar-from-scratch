@@ -1,5 +1,6 @@
 package net.mobindustry.calendarsample;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerTabStrip;
@@ -28,6 +29,7 @@ public class CalendarFragment extends Fragment {
 
     private String LOG_TAG;
     private ViewPager pager;
+    private ProgressDialog progressDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +70,11 @@ public class CalendarFragment extends Fragment {
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(queryUrl, new AsyncHttpResponseHandler() {
             @Override
-            public void onStart() { /* empty */ }
+            public void onStart() {
+                progressDialog = new ProgressDialog(getActivity());
+                progressDialog.setMessage("Loading holidays data...");
+                progressDialog.show();
+            }
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
@@ -77,17 +83,24 @@ public class CalendarFragment extends Fragment {
                 for(int i = 0; i < holidays.length; i++) {
                     holidays[i] = new HolidayModel(holidaysRaw[i]);
                 }
+                dismissProgressDialog();
                 onHolidaysLoaded(holidays);
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                // when error occured - no holidays obtained. To show calendar without holidays - add one, empty holiday.
                 Log.e(LOG_TAG, "Obtaining data resulted in bad code: " + statusCode);
+                dismissProgressDialog();
+                onHolidaysLoaded(new HolidayModel[] { new HolidayModel() });
             }
 
             @Override
             public void onRetry(int retryNo) {
                 Log.e(LOG_TAG, "Obtaining data was restarted. retryNo = " + retryNo);
+                if(progressDialog != null) {
+                    progressDialog.setMessage("Loading holidays data problem. Retry #" + retryNo);
+                }
             }
         });
     }
@@ -101,5 +114,11 @@ public class CalendarFragment extends Fragment {
             mString = "[]";
         }
         return mString;
+    }
+
+    private void dismissProgressDialog() {
+        if(progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 }
