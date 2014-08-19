@@ -23,13 +23,17 @@ public class MonthGridAdapter extends BaseAdapter {
 
     private Context context;
     private ArrayList<GridCellModel> days = new ArrayList<GridCellModel>();
+
+    /**
+     * Cells will be of this height by default - to make them square.
+     */
     private int expectedMinimumHeight;
 
     public MonthGridAdapter(Context context, ArrayList<GridCellModel> daysList) {
         LOG_TAG = this.getClass().getSimpleName();
         this.context = context;
         this.days = daysList;
-        expectedMinimumHeight = getExpectedWidth() / 7;
+        expectedMinimumHeight = calculateMinimumHeight();
     }
 
     @Override
@@ -76,9 +80,13 @@ public class MonthGridAdapter extends BaseAdapter {
         return 0;
     }
 
-    private int getExpectedWidth() {
+    /**
+     * Calculates minimum cell height - to make them close to square.
+     * @return cell's minimum height, pixels.
+     */
+    private int calculateMinimumHeight() {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels;
-        return (int) dpWidth + 2; // + 2 to make it a tiny little bit higher to avoid small vertical scroll
+        return ((int) dpWidth + 2) / 7;
     }
 }

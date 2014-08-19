@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 /**
+ * The most outer fragment that holds all calendar.
  * Created by Den Drobiazko on 11.08.14.
  */
 public class CalendarFragment extends Fragment {
@@ -52,6 +53,11 @@ public class CalendarFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * This method will be called after loading holidays is done.
+     * Continues calendar creation process: creates adapter and assigns it to pager.
+     * @param holidayModels list of holidays
+     */
     private void onHolidaysLoaded(ArrayList<HolidayModel> holidayModels) {
         SlidingMonthAdapter adapter = new SlidingMonthAdapter(getActivity().getSupportFragmentManager());
         adapter.setHolidays(holidayModels);
@@ -59,6 +65,10 @@ public class CalendarFragment extends Fragment {
         pager.setCurrentItem(SlidingMonthAdapter.OFFSET, false);
     }
 
+    /**
+     * Queries for holidays, parses them to ArrayList of HolidayModel objects.
+     * On success or fail - calls onHolidaysLoaded.
+     */
     private void obtainHolidays() {
         // format next string with two dates (from - till), format = "dd-mm-yyyy"
         final String holidayUrlStr = "http://www.kayaposoft.com/enrico/json/v1.0/?action=getPublicHolidaysForDateRange&fromDate=%1$s&toDate=%2$s&country=eng";
@@ -78,7 +88,6 @@ public class CalendarFragment extends Fragment {
                 progressDialog.setCanceledOnTouchOutside(false);
                 progressDialog.show();
             }
-
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 HolidayModelRaw[] holidaysRaw = new Gson().fromJson(byteArrayToString(response), HolidayModelRaw[].class);
@@ -91,7 +100,6 @@ public class CalendarFragment extends Fragment {
                 dismissProgressDialog();
                 onHolidaysLoaded(holidaysList);
             }
-
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
                 // when error occured - no holidays obtained. To show calendar without holidays - add one, empty holiday.
@@ -101,7 +109,6 @@ public class CalendarFragment extends Fragment {
                 emptyHolidaysList.add(new HolidayModel());
                 onHolidaysLoaded(emptyHolidaysList);
             }
-
             @Override
             public void onRetry(int retryNo) {
                 Log.e(LOG_TAG, "Obtaining data was restarted. retryNo = " + retryNo);

@@ -17,7 +17,16 @@ import java.util.Locale;
  */
 public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 
+    /**
+     * Total number of available pages(months).<br>Increasing does not result in significant bigger ram usage
+     * since only 3 fragments are in memory at a time.
+     */
     private static final int NUM_PAGES = 30;
+
+    /**
+     * Number of months that can be scrolled back after opening calendar on default month.
+     * This gives ability to list calendar back.
+     */
     public static final int OFFSET = 5;
 
     private ArrayList<HolidayModel> holidays;
@@ -49,10 +58,19 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         return mFragment;
     }
 
+    /**
+     * Returns position calculated considering given offset. To be used everywhere instead of adapter's position.
+     * @param adapterPosition position given bby adapter.
+     * @return position with offset.
+     */
     private int getPositionWithOffset(int adapterPosition) {
         return adapterPosition - OFFSET;
     }
 
+    /**
+     * @param positionWithOffset position with offset.
+     * @return DateTime object for that month.
+     */
     private DateTime calculateDateTime(int positionWithOffset) {
         DateTime mDateTime = DateTime.now();
         if(positionWithOffset < 0) {
@@ -63,6 +81,10 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         return mDateTime;
     }
 
+    /**
+     * Creates a String array with weekday names for default device's locale.
+     * @return array of weekday names
+     */
     private String[] buildWeekdayNames() {
         String[] weekNames = new String[7];
         for(int i = 0; i < weekNames.length; i++) {
@@ -78,6 +100,11 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         this.holidays = holidays;
     }
 
+    /**
+     * Looks through all holidays array and returns only those that are for given month.
+     * @param currentDateTime DateTime from given month.
+     * @return ArrayList of HolidayModel objects for that month.
+     */
     private ArrayList<HolidayModel> prepareHolidaysForMonth(DateTime currentDateTime) {
         int currentYear, currentMonth;
         currentYear = currentDateTime.getYear();

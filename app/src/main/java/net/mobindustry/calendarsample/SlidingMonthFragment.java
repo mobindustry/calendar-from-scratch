@@ -18,7 +18,7 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 
 /**
- * Fragment representing one month. To be managed by SlidingMonthAdapter.
+ * Fragment representing one month. To be managed by SlidingMonthAdapter inside pager.
  * Created by Den Drobiazko on 11.08.14.
  */
 public class SlidingMonthFragment extends Fragment {
@@ -51,32 +51,7 @@ public class SlidingMonthFragment extends Fragment {
         monthGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                GridCellModel touchedCell = cellModels.get(position);
-                if(!touchedCell.isEmptyCell()) {
-                    DateTime cellDateTime = touchedCell.getDateTime();
-                    String title, message;
-                    title = cellDateTime.toString("dd.MM.yyyy");
-                    message = cellDateTime.toString("dd MMMM yyyy");
-                    if(touchedCell.isToday()) {
-                        message += "\nToday";
-                    }
-                    if(touchedCell.isHoliday()) {
-                        message += "\n" + touchedCell.getHoliday().getEnglishName();
-                    }
-
-                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-                    dialogBuilder.setTitle(title)
-                        .setMessage(message)
-                        .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                            }
-                        })
-                        .create().show();
-                } else {
-                    Toast.makeText(getActivity(), "Empty cell", Toast.LENGTH_SHORT).show();
-                }
+                showDialogOnCellTouch(cellModels.get(position));
             }
         });
 
@@ -131,5 +106,37 @@ public class SlidingMonthFragment extends Fragment {
 
     public void setWeekdayNames(String[] weekdayNames) {
         this.weekdayNames = weekdayNames;
+    }
+
+    /**
+     * Build and shows dialog on cell touch.
+     * @param touchedCell GridCellModel object for that day.
+     */
+    private void showDialogOnCellTouch(GridCellModel touchedCell) {
+        if(!touchedCell.isEmptyCell()) {
+            DateTime cellDateTime = touchedCell.getDateTime();
+            String title, message;
+            title = cellDateTime.toString("dd.MM.yyyy");
+            message = cellDateTime.toString("dd MMMM yyyy");
+            if(touchedCell.isToday()) {
+                message += "\nToday";
+            }
+            if(touchedCell.isHoliday()) {
+                message += "\n" + touchedCell.getHoliday().getEnglishName();
+            }
+
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+            dialogBuilder.setTitle(title)
+                .setMessage(message)
+                .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create().show();
+        } else {
+            Toast.makeText(getActivity(), "Empty cell", Toast.LENGTH_SHORT).show();
+        }
     }
 }
