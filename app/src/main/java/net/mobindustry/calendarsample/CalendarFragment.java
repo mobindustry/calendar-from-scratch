@@ -73,6 +73,8 @@ public class CalendarFragment extends Fragment {
             public void onStart() {
                 progressDialog = new ProgressDialog(getActivity());
                 progressDialog.setMessage("Loading holidays data...");
+                progressDialog.setCancelable(false);
+                progressDialog.setCanceledOnTouchOutside(false);
                 progressDialog.show();
             }
 
