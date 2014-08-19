@@ -20,7 +20,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
     private static final int NUM_PAGES = 30;
     public static final int OFFSET = 5;
 
-    private HolidayModel[] holidays;
+    private ArrayList<HolidayModel> holidays;
 
     public SlidingMonthAdapter(FragmentManager mFragmentManager) {
         super(mFragmentManager);
@@ -74,7 +74,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         return weekNames;
     }
 
-    public void setHolidays(HolidayModel[] holidays) {
+    public void setHolidays(ArrayList<HolidayModel> holidays) {
         this.holidays = holidays;
     }
 

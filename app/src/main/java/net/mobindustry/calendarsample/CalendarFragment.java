@@ -21,6 +21,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 /**
  * Created by Den Drobiazko on 11.08.14.
@@ -51,7 +52,7 @@ public class CalendarFragment extends Fragment {
         return rootView;
     }
 
-    private void onHolidaysLoaded(HolidayModel[] holidayModels) {
+    private void onHolidaysLoaded(ArrayList<HolidayModel> holidayModels) {
         SlidingMonthAdapter adapter = new SlidingMonthAdapter(getActivity().getSupportFragmentManager());
         adapter.setHolidays(holidayModels);
         pager.setAdapter(adapter);
@@ -82,11 +83,13 @@ public class CalendarFragment extends Fragment {
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 HolidayModelRaw[] holidaysRaw = new Gson().fromJson(byteArrayToString(response), HolidayModelRaw[].class);
                 HolidayModel[] holidays = new HolidayModel[holidaysRaw.length];
-                for(int i = 0; i < holidays.length; i++) {
+                ArrayList<HolidayModel> holidaysList = new ArrayList<HolidayModel>();
+                for(int i = 0; i < holidaysRaw.length; i++) {
+                    holidaysList.add(new HolidayModel(holidaysRaw[i]));
                     holidays[i] = new HolidayModel(holidaysRaw[i]);
                 }
                 dismissProgressDialog();
-                onHolidaysLoaded(holidays);
+                onHolidaysLoaded(holidaysList);
             }
 
             @Override
@@ -94,7 +97,9 @@ public class CalendarFragment extends Fragment {
                 // when error occured - no holidays obtained. To show calendar without holidays - add one, empty holiday.
                 Log.e(LOG_TAG, "Obtaining data resulted in bad code: " + statusCode);
                 dismissProgressDialog();
-                onHolidaysLoaded(new HolidayModel[] { new HolidayModel() });
+                ArrayList<HolidayModel> emptyHolidaysList = new ArrayList<HolidayModel>();
+                emptyHolidaysList.add(new HolidayModel());
+                onHolidaysLoaded(emptyHolidaysList);
             }
 
             @Override
