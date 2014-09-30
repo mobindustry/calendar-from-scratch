@@ -3,7 +3,7 @@ package net.mobindustry.calendarsample.model;
 import org.joda.time.DateTime;
 
 /**
- * A class representing dataset for one day at month's grid.
+ * A class representing set of data for one day at month's grid.
  */
 public class GridCellModel {
 
@@ -13,7 +13,7 @@ public class GridCellModel {
     private HolidayModel holiday;
 
     /**
-     * DateTime for this particular day. Is null by default, will remain null
+     * DateTime for this particular day. Is null by default, will remain null if now explicitly set by setter.
      */
     private DateTime dateTime;
 

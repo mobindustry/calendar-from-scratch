@@ -18,11 +18,14 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 
 /**
- * Fragment representing one month. To be managed by SlidingMonthAdapter inside pager.
+ * Fragment representing one month. To be managed by SlidingMonthAdapter inside ViewPager.
  */
 public class SlidingMonthFragment extends Fragment {
 
     public String LOG_TAG;
+    /**
+     * {@link org.joda.time.DateTime} object for current month
+     */
     private DateTime dateTime;
     private String[] weekdayNames;
     private ArrayList<HolidayModel> monthHolidays;
@@ -40,6 +43,7 @@ public class SlidingMonthFragment extends Fragment {
 
         cellModels = initiateCellArray(dateTime);
 
+        // show weekday names above calendar grid
         GridView weekdayGrid = (GridView) rootView.findViewById(R.id.weekday_grid);
         weekdayGrid.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.weekday_tv, weekdayNames));
 
@@ -71,7 +75,7 @@ public class SlidingMonthFragment extends Fragment {
 
     /**
      * Based on this month's DateTime object calculates array of GridCellModel objects, that will be used to build grid.
-     * @param dateTime
+     * @param dateTime this month's DateTime
      */
     private ArrayList<GridCellModel> initiateCellArray(DateTime dateTime) {
         int emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
@@ -79,13 +83,17 @@ public class SlidingMonthFragment extends Fragment {
 
         DateTime monthDateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(),
             0, 0, 0);
+        // how many "empty" days there are in the first week that pertain to previous month
         emptyCellsAtStart = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
         daysInMonth = monthDateTime.dayOfMonth().getMaximumValue();
+        // how many "empty" days there are after last month's day in the last week that pertain to next month
         emptyCellsInTheEnd = 7 - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
         for(int i = 0; i < emptyCellsAtStart; i++) {
+            // for every "empty" cell create empty cell model
             days.add(new GridCellModel());
         }
         for(int i = 0; i < daysInMonth; i++) {
+            // create cell for day of month and populate it with holiday if present
             GridCellModel mModel = new GridCellModel().setDateTime(dateTime.withDayOfMonth(i + 1));
             if(!monthHolidays.isEmpty()) {
                 for(HolidayModel mHolidayModel : monthHolidays) {
@@ -98,6 +106,7 @@ public class SlidingMonthFragment extends Fragment {
             days.add(mModel);
         }
         for(int i = 0; i < emptyCellsInTheEnd; i++) {
+            // for every "empty" cell create empty cell model
             days.add(new GridCellModel());
         }
         return days;

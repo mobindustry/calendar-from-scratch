@@ -3,6 +3,7 @@ package net.mobindustry.calendarsample.model;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * Data model for holiday essence that represents holiday as it is obtained from json.
  */
 public class HolidayModelRaw {
 

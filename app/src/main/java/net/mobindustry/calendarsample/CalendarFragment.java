@@ -29,6 +29,9 @@ import java.util.ArrayList;
 public class CalendarFragment extends Fragment {
 
     private String LOG_TAG;
+    /**
+     * Pager that is responsible for swiping calendar months and recycling fragments.
+     */
     private ViewPager pager;
     private ProgressDialog progressDialog;
 
@@ -54,18 +57,19 @@ public class CalendarFragment extends Fragment {
 
     /**
      * This method will be called after loading holidays is done.
-     * Continues calendar creation process: creates adapter and assigns it to pager.
+     * Continues calendar creation process: creates adapter using passed holidays and assigns it to pager.
      * @param holidayModels list of holidays
      */
     private void onHolidaysLoaded(ArrayList<HolidayModel> holidayModels) {
         SlidingMonthAdapter adapter = new SlidingMonthAdapter(getActivity().getSupportFragmentManager());
         adapter.setHolidays(holidayModels);
         pager.setAdapter(adapter);
+        // set what month will be opened by default.
         pager.setCurrentItem(SlidingMonthAdapter.OFFSET, false);
     }
 
     /**
-     * Queries for holidays, parses them to ArrayList of HolidayModel objects.
+     * Queries for holidays, parses them to ArrayList of {@link net.mobindustry.calendarsample.model.HolidayModel} objects.
      * On success or fail - calls onHolidaysLoaded.
      */
     private void obtainHolidays() {
@@ -90,11 +94,9 @@ public class CalendarFragment extends Fragment {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                 HolidayModelRaw[] holidaysRaw = new Gson().fromJson(byteArrayToString(response), HolidayModelRaw[].class);
-                HolidayModel[] holidays = new HolidayModel[holidaysRaw.length];
                 ArrayList<HolidayModel> holidaysList = new ArrayList<HolidayModel>();
                 for(int i = 0; i < holidaysRaw.length; i++) {
                     holidaysList.add(new HolidayModel(holidaysRaw[i]));
-                    holidays[i] = new HolidayModel(holidaysRaw[i]);
                 }
                 dismissProgressDialog();
                 onHolidaysLoaded(holidaysList);

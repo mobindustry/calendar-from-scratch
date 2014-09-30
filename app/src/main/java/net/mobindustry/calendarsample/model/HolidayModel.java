@@ -3,6 +3,7 @@ package net.mobindustry.calendarsample.model;
 import org.joda.time.DateTime;
 
 /**
+ * Data model for holiday essence.
  */
 public class HolidayModel {
 
@@ -16,7 +17,7 @@ public class HolidayModel {
     }
 
     /**
-     * Use this have a non-empty holidays array in case if holidays loading failed.
+     * Constructor to have a non-empty holidays array in case if holidays loading failed.
      */
     public HolidayModel() {
         date = DateTime.now().minusYears(100);

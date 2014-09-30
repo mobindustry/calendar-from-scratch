@@ -46,6 +46,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
+        // this will create a formatted title for requested month
         return calculateDateTime(getPositionWithOffset(position)).toString("MMMM YYYY", Locale.getDefault());
     }
 
@@ -59,7 +60,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 
     /**
      * Returns position calculated considering given offset. To be used everywhere instead of adapter's position.
-     * @param adapterPosition position given bby adapter.
+     * @param adapterPosition position given by adapter.
      * @return position with offset.
      */
     private int getPositionWithOffset(int adapterPosition) {
