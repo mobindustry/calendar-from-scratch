@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 /**
  * Adapter to fill month grid properly based on given collection of GridCellModel.
- * Created by Den Drobiazko on 11.08.14.
  */
 public class MonthGridAdapter extends BaseAdapter {
 

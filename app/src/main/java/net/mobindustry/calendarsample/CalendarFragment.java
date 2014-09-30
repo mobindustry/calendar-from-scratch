@@ -24,8 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 /**
- * The most outer fragment that holds all calendar.
- * Created by Den Drobiazko on 11.08.14.
+ * The most outer fragment that holds the whole calendar.
  */
 public class CalendarFragment extends Fragment {
 

@@ -4,7 +4,6 @@ import org.joda.time.DateTime;
 
 /**
  * A class representing dataset for one day at month's grid.
- * Created by Den Drobiazko on 11.08.14.
  */
 public class GridCellModel {
 

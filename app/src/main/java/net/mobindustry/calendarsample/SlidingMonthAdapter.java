@@ -13,7 +13,6 @@ import java.util.Locale;
 
 /**
  * Adapter to create, switch and recycle properly "Month" fragments containing grid with days.
- * Created by Den Drobiazko on 11.08.14.
  */
 public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 

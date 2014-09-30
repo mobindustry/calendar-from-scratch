@@ -3,7 +3,6 @@ package net.mobindustry.calendarsample.model;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by Den Drobiazko on 12.08.14.
  */
 public class HolidayModelRaw {
 

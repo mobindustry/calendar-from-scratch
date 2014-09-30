@@ -3,7 +3,6 @@ package net.mobindustry.calendarsample.model;
 import org.joda.time.DateTime;
 
 /**
- * Created by Den Drobiazko on 12.08.14.
  */
 public class HolidayModel {
 

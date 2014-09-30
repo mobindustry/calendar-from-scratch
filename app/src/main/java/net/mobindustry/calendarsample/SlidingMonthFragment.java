@@ -19,7 +19,6 @@ import java.util.ArrayList;
 
 /**
  * Fragment representing one month. To be managed by SlidingMonthAdapter inside pager.
- * Created by Den Drobiazko on 11.08.14.
  */
 public class SlidingMonthFragment extends Fragment {
 
