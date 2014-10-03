@@ -1,3 +1,266 @@
-This is a readme file for calendar-from-scratch project.
+Sometimes things develop into a situation where you need some kind of a calendar for your application. I'm not talking about the app which IS a calendar, with one and only goal to show weeks/months, remember events for particular days and fire notifications. This is about your application working with some data, which - on one of the sreens - you might want to represent as set of events on month's grid.
 
-Will be enriched with proper readme later...
+As long as calendar is a quite complex element, you might face performance issues while using some of ready-for-use libraries - just wait untill you put quite a lot of elements on it and it won't be so smooth as user want's it. Also, library projects always offer lower lever of customization compared to calendar that was created from scratch for your app specifically.
+
+In this article I will create a simple yet highly-customizable calendar, from scratch. I will show sample application's structure, explain main elements that you need to create to make everything work and highlight places in code, which you want to enhance for further developing.
+
+Note that I did not intend to create a calendar that can show you months from now and till the ends of time. Let's be honest - you hardly ever swipe to some date like 2 years from now in you calendar app. Or imagine that you are creating an app that shows your son's school timetable - do you need to see what will the schedule be in 5 years? I guess no.
+
+For me - throwing away this super-flexibility was a relief, because it made my code much simpler.
+Now to the point!
+
+## Structure
+
+First of all, we expect our app to contain not just this calendar, so we have it wrapped to CalendarFragment, that is shown in MainActivity and can be replaced by any other screen:
+
+```java
+public class CalendarFragment extends Fragment {
+
+    private String LOG_TAG;
+    /**
+     * Pager that is responsible for swiping calendar months and recycling fragments.
+     */
+    private ViewPager pager;
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        LOG_TAG = this.getClass().getSimpleName();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_calendar, container, false);
+
+        pager = (ViewPager) rootView.findViewById(R.id.calendar_pager);
+
+        PagerTabStrip tabStrip = (PagerTabStrip) rootView.findViewById(R.id.calendar_pager_tab_strip);
+        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+            getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
+
+        return rootView;
+    }
+}
+```
+
+As you can see it has only one element - ViewPager, that will switch and recycle views representing months.
+ViewPager needs an adapter, and that's where one of main elements steps in - FragmentStatePagerAdapter. It's a native Android element, it's easy to use and it shows great performance.
+
+I ended up extending this FragmentStatePagerAdapter into a SlidingMonthAdapter class. Here some things that you should note:
+
+FragmentStatePagerAdapter is not an infinite pager. It needs some fixed int as element's count. For me - 30 was enough, so I defined
+
+`private static final int NUM_PAGES = 30;`
+
+You can put any number that meets your needs and it won't issue huge memory usage - that's the beauty of FragmentStatePagerAdapter. By default it holds only 3 fragments at a time - current, one on the right and one on the left.
+
+One more requirement that I faced during developing calendar - user expects to see current month when he opens calendar but he also wants to be able to scroll back for a couple of months or even a year. To reach that, I created
+
+`public static final int OFFSET = 5;`
+
+variable. Setting it to 5 means that by default I will have 5 screens available on the left after opening calendar. To make everything work correctly I created method
+
+```java
+private int getPositionWithOffset(int adapterPosition) {
+    return adapterPosition - OFFSET;
+}
+```
+
+and used it whereever I needed return current position:
+
+```java
+@Override
+public Fragment getItem(int i) {
+    return createFragment(getPositionWithOffset(i));
+}
+
+@Override
+public CharSequence getPageTitle(int position) {
+    return calculateDateTime(getPositionWithOffset(position)).toString("MMMM YYYY", Locale.getDefault());
+}
+```
+
+Also - when creating a new month grid fragment - I wanted to put correct month number to it. This method gets right month based on position with offset:
+
+```java
+private DateTime calculateDateTime(int positionWithOffset) {
+    DateTime mDateTime = DateTime.now();
+    if(positionWithOffset < 0) {
+    mDateTime = mDateTime.minusMonths(-1 * positionWithOffset);
+    } else if (positionWithOffset > 0) {
+        mDateTime = mDateTime.plusMonths(positionWithOffset);
+    }
+    return mDateTime;
+}
+```
+
+So - you start screen with calendar, pager receives adapter and creates fragments that hold month grid directly. In sample application it is called SlidingMonthFragment and, beside standard onCreateView method, has one significant part of calendar - initiateCellArray method. Basicly, this is the core place where you shoud put your code that calculates all necessary dataset for your calendar. For now, data model (class called GridCellModel) holds two fields that are used by grid adapter for building correct calendar grid:
+
+```java
+private boolean isEmptyCell = false;
+private boolean isToday;
+```
+
+This is the place where you can code more fields to hold your data. With supplementary changes to grid adapter's getView and initiateCellArray in SlidingMonthFragment - allows you to enrich your calendar with any kind of events.
+
+Now let's take a step back to SlidingMonthFragment. For now, initiateCellArray accepts [joda](http://www.joda.org/joda-time/)'s DateTime object, which points somewhere to current month and builds up an ArrayList with GridCellModell - one for each day in cell:
+
+```java
+private ArrayList<GridCellModel> initiateCellArray(DateTime dateTime) {
+    int emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
+    ArrayList<GridCellModel> days = new ArrayList<GridCellModel>();
+
+    DateTime monthDateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(),
+        0, 0, 0);
+    emptyCellsAtStart = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
+    daysInMonth = monthDateTime.dayOfMonth().getMaximumValue();
+    emptyCellsInTheEnd = 7 - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
+    for(int i = 0; i < emptyCellsAtStart; i++) {
+        days.add(new GridCellModel());
+    }
+    for(int i = 0; i < daysInMonth; i++) {
+        GridCellModel mModel = new GridCellModel().setDateTime(dateTime.withDayOfMonth(i + 1));
+        days.add(mModel);
+    }
+    for(int i = 0; i < emptyCellsInTheEnd; i++) {
+        days.add(new GridCellModel());
+    }
+    return days;
+}
+```
+
+As you can see, with the help of joda time library it pretty trivial: we get monthDateTime that points to first day in month, get the weekday number from it and calculate number of empty cells before the first day of month. Same way is for empty cells at the end.
+
+Then we use these ints in loops and create GridCellModel items.
+
+The last point is the getView method in grid adapter (MonthGridAdapter):
+
+```java
+@Override
+public View getView(int position, View view, ViewGroup viewGroup) {
+    GridCellModel day = days.get(position);
+    LayoutInflater mInflater = LayoutInflater.from(context);
+    ViewGroup cellView = (ViewGroup) mInflater.inflate(R.layout.grid_cell, viewGroup, false);
+
+    TextView dateTv = (TextView) cellView.findViewById(R.id.grid_cell_tv);
+    if(day.isEmptyCell()) {
+        cellView.setBackgroundResource(R.drawable.gridcell_inactive_selector);
+    } else {
+        dateTv.setText(Integer.toString(day.getDayNumber()));
+        if(day.isToday()) {
+            cellView.setBackgroundResource(R.drawable.gridcell_today_selector);
+        } else {
+            cellView.setBackgroundResource(R.drawable.gridcell_selector);
+        }
+        if(day.isHoliday()) {
+            dateTv.setTextColor(context.getResources().getColor(android.R.color.holo_red_light));
+        }
+    }
+    return cellView;
+}
+```
+
+Nothing complex as you can see: having an array of days and current position we analyse current day's state (isEmptyCell(), day.isToday(), etc) and do corresponding changes to grid view.
+
+The whole structure looks like this:
+
+// calendar scheme
+
+## Putting data to grid
+
+What't the point of having calendar screen without some custom data and events on it?
+Let's implement something to show for particular days.
+A good example will be to show United Kingdom public holidays on it.
+
+We will get holidays in json format from [Enrico Service](http://www.kayaposoft.com/enrico/json/). To simplify network-related stuff I used [AsyncHttpClient](http://loopj.com/android-async-http/).
+
+So, in CalendarFragment I created obtainHolidays method, that queried Enrico and deserialized it to list of HolidayModel objects, that I created (I'm not providing more details since this is not related to calendar creation. You can see details in sample app code).
+
+Next, via setter-method I put obtained holidays to pager adapter, which are then used during creating a SlidingMonthFragment - I put into month's fragment only holidays for that month.
+
+In SlidingMonthFragment I need to process that data to use it in grid.
+First, in GridCellModel I added holiday field of HolidayModel type.
+Next, changed second for loop in initiateCellArray:
+
+```java
+if(!monthHolidays.isEmpty()) {
+    for(HolidayModel mHolidayModel : monthHolidays) {
+        if(mHolidayModel.getDate().withTimeAtStartOfDay()
+            .equals(mModel.getDateTime().withTimeAtStartOfDay())) {
+            mModel.setHoliday(mHolidayModel);
+        }
+    }
+}
+```
+
+Now some GridCellModels will have info about holiday inside. We need to use that in GridView adapter's getView method. It was implemented with the following:
+
+```java
+if(day.isHoliday()) {
+    dateTv.setTextColor(context.getResources().getColor(android.R.color.holo_red_light));
+    dateTv.setTypeface(dateTv.getTypeface(), Typeface.BOLD);
+    TextView holidayName = new TextView(context);
+    holidayName.setText(day.getHoliday().getEnglishName());
+    holidayName.setTextSize(10);
+    holidayName.setMaxLines(2);
+    holidayName.setEllipsize(TextUtils.TruncateAt.END);
+    cellView.addView(holidayName);
+}
+```
+
+Now some days display in red bold and have a holiday name displayed under date.
+
+## Handle grid cell clicks
+
+Grid cell is small and you can't put much info there. The great idea is to give out a dialog-style window with properly formatted info on day that was clicked. It can even be a new activity or you can push some interface below month grid when a day cell gets tapped.
+
+Whatever you deside to do in you onClick event - we need to develop OnItemClickListener for month's GridView.
+
+In SlidingMonthFragment's onCreateView we add this:
+
+```java
+monthGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        GridCellModel touchedCell = cellModels.get(position);
+        if(!touchedCell.isEmptyCell()) {
+            DateTime cellDateTime = touchedCell.getDateTime();
+            String title, message;
+            title = cellDateTime.toString("dd.MM.yyyy");
+            message = cellDateTime.toString("dd MMMM yyyy");
+            if(touchedCell.isToday()) {
+                message += "\nToday";
+            }
+            if(touchedCell.isHoliday()) {
+                message += "\n" + touchedCell.getHoliday().getEnglishName();
+            }
+
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+            dialogBuilder.setTitle(title)
+                .setMessage(message)
+                .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create().show();
+        } else {
+            Toast.makeText(getActivity(), "Empty cell", Toast.LENGTH_SHORT).show();
+        }
+    }
+});
+```
+
+an AlertDialog-styled window will show up for a non-empty cell. This is just to give you an idea how this can be done.
+
+## Almost "The end"
+
+So, to sum everything up - this is the way you can implement a calendar for your app. Remember that this is not a ready-to-use library, where you can extend and override here and there and forget about hard work. This is more like a set of milestones that I've met on the way from bare idea of building a calendar from scratch to the finished sample.
+
+You can use the whole idea or peek some key moments from here. I hope it will be useful.
+
+## Why not library? ("The end")
+
+You might think that a good thing would be to wrap this into complete library, so that one could just extend CalendarFragment, override initiateCellArray and getView methods and be happy. Well, that's true. The reason why I didn't do so - trivial lack of time.
+Maybe this will be implemented later.
