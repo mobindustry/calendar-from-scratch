@@ -13,6 +13,7 @@ import net.mobindustry.calendarsample.R;
 import net.mobindustry.calendarsample.model.GridCellModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Adapter to fill month grid properly based on given collection of GridCellModel.
@@ -20,14 +21,14 @@ import java.util.ArrayList;
 public class MonthGridAdapter extends BaseAdapter {
 
     private Context context;
-    private ArrayList<GridCellModel> days;
+    private List<GridCellModel> days;
 
     /**
      * Cells will be of this height by default - to make them square.
      */
     private int expectedMinimumHeight;
 
-    public MonthGridAdapter(Context context, ArrayList<GridCellModel> daysList) {
+    public MonthGridAdapter(Context context, List<GridCellModel> daysList) {
         this.context = context;
         this.days = daysList;
         expectedMinimumHeight = calculateMinimumHeight();

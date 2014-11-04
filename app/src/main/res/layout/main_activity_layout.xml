@@ -4,18 +4,27 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical">
-  <Button
-      android:id="@+id/standardCalendarButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:minWidth="200dip"
-      android:text="@string/standardCalendar"/>
-  <Button
-      android:id="@+id/customCalendarButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:minWidth="200dip"
-      android:text="@string/customCalendar"/>
+
+    <Button
+        android:id="@+id/standardCalendarButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="200dip"
+        android:text="@string/standardCalendar" />
+
+    <Button
+        android:id="@+id/customCalendarButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="200dip"
+        android:text="@string/customCalendar" />
+
+    <Button
+        android:id="@+id/anotherCalendarButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="200dip"
+        android:text="@string/anotherCalendar" />
 
 
 </LinearLayout>
