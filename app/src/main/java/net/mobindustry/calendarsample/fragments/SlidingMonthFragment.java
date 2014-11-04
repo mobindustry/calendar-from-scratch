@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample;
+package net.mobindustry.calendarsample.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -11,6 +11,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Toast;
+import net.mobindustry.calendarsample.adapters.MonthGridAdapter;
+import net.mobindustry.calendarsample.R;
 import net.mobindustry.calendarsample.model.GridCellModel;
 import net.mobindustry.calendarsample.model.HolidayModel;
 import org.joda.time.DateTime;
@@ -22,7 +24,6 @@ import java.util.ArrayList;
  */
 public class SlidingMonthFragment extends Fragment {
 
-    public String LOG_TAG;
     /**
      * {@link org.joda.time.DateTime} object for current month
      */
@@ -30,12 +31,6 @@ public class SlidingMonthFragment extends Fragment {
     private String[] weekdayNames;
     private ArrayList<HolidayModel> monthHolidays;
     private ArrayList<GridCellModel> cellModels;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        LOG_TAG = this.getClass().getSimpleName();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -95,7 +90,7 @@ public class SlidingMonthFragment extends Fragment {
         for(int i = 0; i < daysInMonth; i++) {
             // create cell for day of month and populate it with holiday if present
             GridCellModel mModel = new GridCellModel().setDateTime(dateTime.withDayOfMonth(i + 1));
-            if(!monthHolidays.isEmpty()) {
+            if(null != monthHolidays  && !monthHolidays.isEmpty()) {
                 for(HolidayModel mHolidayModel : monthHolidays) {
                     if(mHolidayModel.getDate().withTimeAtStartOfDay()
                         .equals(mModel.getDateTime().withTimeAtStartOfDay())) {

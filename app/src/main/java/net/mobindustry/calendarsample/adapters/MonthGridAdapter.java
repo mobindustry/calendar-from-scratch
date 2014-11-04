@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample;
+package net.mobindustry.calendarsample.adapters;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+import net.mobindustry.calendarsample.R;
 import net.mobindustry.calendarsample.model.GridCellModel;
 
 import java.util.ArrayList;
@@ -18,10 +19,8 @@ import java.util.ArrayList;
  */
 public class MonthGridAdapter extends BaseAdapter {
 
-    private String LOG_TAG;
-
     private Context context;
-    private ArrayList<GridCellModel> days = new ArrayList<GridCellModel>();
+    private ArrayList<GridCellModel> days;
 
     /**
      * Cells will be of this height by default - to make them square.
@@ -29,7 +28,6 @@ public class MonthGridAdapter extends BaseAdapter {
     private int expectedMinimumHeight;
 
     public MonthGridAdapter(Context context, ArrayList<GridCellModel> daysList) {
-        LOG_TAG = this.getClass().getSimpleName();
         this.context = context;
         this.days = daysList;
         expectedMinimumHeight = calculateMinimumHeight();
@@ -56,7 +54,6 @@ public class MonthGridAdapter extends BaseAdapter {
                 dateTv.setTypeface(dateTv.getTypeface(), Typeface.BOLD);
                 TextView holidayName = new TextView(context);
                 holidayName.setText(day.getHoliday().getEnglishName());
-                holidayName.setTextSize(10);
                 holidayName.setMaxLines(2);
                 holidayName.setEllipsize(TextUtils.TruncateAt.END);
                 cellView.addView(holidayName);
@@ -72,7 +69,7 @@ public class MonthGridAdapter extends BaseAdapter {
     }
     @Override
     public Object getItem(int i) {
-        return null;
+        return days.get(i);
     }
     @Override
     public long getItemId(int i) {

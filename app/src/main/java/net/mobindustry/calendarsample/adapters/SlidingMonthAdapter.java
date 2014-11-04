@@ -1,8 +1,9 @@
-package net.mobindustry.calendarsample;
+package net.mobindustry.calendarsample.adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import net.mobindustry.calendarsample.fragments.SlidingMonthFragment;
 import net.mobindustry.calendarsample.model.HolidayModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -52,6 +53,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 
     private SlidingMonthFragment createFragment(int month) {
         SlidingMonthFragment mFragment = new SlidingMonthFragment();
+        //TODO
         mFragment.setDateTime(calculateDateTime(month));
         mFragment.setWeekdayNames(buildWeekdayNames());
         mFragment.setMonthHolidays(prepareHolidaysForMonth(mFragment.getDateTime()));

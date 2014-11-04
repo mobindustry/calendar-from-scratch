@@ -1,11 +1,10 @@
-package net.mobindustry.calendarsample;
+package net.mobindustry.calendarsample.fragments;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,8 @@ import android.view.ViewGroup;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import net.mobindustry.calendarsample.R;
+import net.mobindustry.calendarsample.adapters.SlidingMonthAdapter;
 import net.mobindustry.calendarsample.model.HolidayModel;
 import net.mobindustry.calendarsample.model.HolidayModelRaw;
 import org.apache.http.Header;
@@ -28,18 +29,12 @@ import java.util.ArrayList;
  */
 public class CalendarFragment extends Fragment {
 
-    private String LOG_TAG;
     /**
      * Pager that is responsible for swiping calendar months and recycling fragments.
      */
     private ViewPager pager;
     private ProgressDialog progressDialog;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        LOG_TAG = this.getClass().getSimpleName();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,8 +43,7 @@ public class CalendarFragment extends Fragment {
         pager = (ViewPager) rootView.findViewById(R.id.calendar_pager);
 
         PagerTabStrip tabStrip = (PagerTabStrip) rootView.findViewById(R.id.calendar_pager_tab_strip);
-        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-            getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
+        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP,getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
 
         obtainHolidays();
         return rootView;
@@ -78,8 +72,7 @@ public class CalendarFragment extends Fragment {
         DateTimeFormatter mFormatter = DateTimeFormat.forPattern("dd-MM-yyyy");
         DateTime dateTimeFrom = DateTime.now().minusMonths(5).withDayOfMonth(1);
         DateTime dateTimeTill = DateTime.now().plusMonths(24).withDayOfMonth(1);
-        String queryUrl = String.format(holidayUrlStr,
-            dateTimeFrom.toString(mFormatter), dateTimeTill.toString(mFormatter));
+        String queryUrl = String.format(holidayUrlStr,dateTimeFrom.toString(mFormatter), dateTimeTill.toString(mFormatter));
 
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(queryUrl, new AsyncHttpResponseHandler() {
@@ -104,7 +97,6 @@ public class CalendarFragment extends Fragment {
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
                 // when error occured - no holidays obtained. To show calendar without holidays - add one, empty holiday.
-                Log.e(LOG_TAG, "Obtaining data resulted in bad code: " + statusCode);
                 dismissProgressDialog();
                 ArrayList<HolidayModel> emptyHolidaysList = new ArrayList<HolidayModel>();
                 emptyHolidaysList.add(new HolidayModel());
@@ -112,7 +104,6 @@ public class CalendarFragment extends Fragment {
             }
             @Override
             public void onRetry(int retryNo) {
-                Log.e(LOG_TAG, "Obtaining data was restarted. retryNo = " + retryNo);
                 if(progressDialog != null) {
                     progressDialog.setMessage("Loading holidays data problem. Retry #" + retryNo);
                 }
@@ -125,7 +116,6 @@ public class CalendarFragment extends Fragment {
         try {
             mString = new String(array, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_TAG, "byteArrayToString: input has bad encoding - not a UTF-8");
             mString = "[]";
         }
         return mString;
