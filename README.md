@@ -16,8 +16,7 @@ First of all, we expect our app to contain not just this calendar, so we have it
 ```java
 public class CalendarFragment extends Fragment {
 
-    private String LOG_TAG;
-    /**
+     /**
      * Pager that is responsible for swiping calendar months and recycling fragments.
      */
     private ViewPager pager;
@@ -25,9 +24,14 @@ public class CalendarFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LOG_TAG = this.getClass().getSimpleName();
+        Bundle args = getArguments();
+        if (args != null) {
+            mPagesCount = args.getInt(PAGES_COUNT, DEFAULT_PAGES_COUNT);
+            mHolidaysEnabled = args.getBoolean(HOLIDAYS_ENABLED, false);
+            mOffset = args.getInt(OFFSET, DEFAULT_OFFSET);
+        }
     }
-
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_calendar, container, false);
@@ -35,34 +39,41 @@ public class CalendarFragment extends Fragment {
         pager = (ViewPager) rootView.findViewById(R.id.calendar_pager);
 
         PagerTabStrip tabStrip = (PagerTabStrip) rootView.findViewById(R.id.calendar_pager_tab_strip);
-        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-            getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
+        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
+
+        if (savedInstanceState != null) {
+            mHolidaysObtained = savedInstanceState.getBoolean(HOLIDAYS_OBTAINED);
+        }
+
+        setAdapter();
 
         return rootView;
     }
+
+    
 }
 ```
 
 As you can see it has only one element - ViewPager, that will switch and recycle views representing months.
 ViewPager needs an adapter, and that's where one of main elements steps in - FragmentStatePagerAdapter. It's a native Android element, it's easy to use and it shows great performance.
 
-I ended up extending this FragmentStatePagerAdapter into a SlidingMonthAdapter class. Here some things that you should note:
+I ended up extending this FragmentStatePagerAdapter into a CalendarAdapter class. Here some things that you should note:
 
 FragmentStatePagerAdapter is not an infinite pager. It needs some fixed int as element's count. For me - 30 was enough, so I defined
 
-`private static final int NUM_PAGES = 30;`
+`private static final int DEFAULT_PAGES_COUNT = 30;`
 
 You can put any number that meets your needs and it won't issue huge memory usage - that's the beauty of FragmentStatePagerAdapter. By default it holds only 3 fragments at a time - current, one on the right and one on the left.
 
 One more requirement that I faced during developing calendar - user expects to see current month when he opens calendar but he also wants to be able to scroll back for a couple of months or even a year. To reach that, I created
 
-`public static final int OFFSET = 5;`
+`public static final int DEFAULT_OFFSET = 5;`
 
 variable. Setting it to 5 means that by default I will have 5 screens available on the left after opening calendar. To make everything work correctly I created method
 
 ```java
 private int getPositionWithOffset(int adapterPosition) {
-    return adapterPosition - OFFSET;
+    return adapterPosition - mOffset;
 }
 ```
 
@@ -76,7 +87,7 @@ public Fragment getItem(int i) {
 
 @Override
 public CharSequence getPageTitle(int position) {
-    return calculateDateTime(getPositionWithOffset(position)).toString("MMMM YYYY", Locale.getDefault());
+    return calculateDateTime(getPositionWithOffset(position)).toString(DATE_HEADER_FORMAT, Locale.getDefault());
 }
 ```
 
@@ -94,77 +105,119 @@ private DateTime calculateDateTime(int positionWithOffset) {
 }
 ```
 
-So - you start screen with calendar, pager receives adapter and creates fragments that hold month grid directly. In sample application it is called SlidingMonthFragment and, beside standard onCreateView method, has one significant part of calendar - initiateCellArray method. Basicly, this is the core place where you shoud put your code that calculates all necessary dataset for your calendar. For now, data model (class called GridCellModel) holds two fields that are used by grid adapter for building correct calendar grid:
+So - you start screen with calendar, pager receives adapter and creates fragments that hold month grid directly. In sample application it is called MonthFragment and, beside standard onCreateView method, has one significant part of calendar - initiateCellArray method. Basicly, this is the core place where you shoud put your code that calculates all necessary dataset for your calendar. For now, data model (class called DayModel) holds two fields that are used by grid adapter for building correct calendar grid:
 
 ```java
 private boolean isEmptyCell = false;
 private boolean isToday;
 ```
 
-This is the place where you can code more fields to hold your data. With supplementary changes to grid adapter's getView and initiateCellArray in SlidingMonthFragment - allows you to enrich your calendar with any kind of events.
+This is the place where you can code more fields to hold your data. With supplementary changes to grid adapter's getView and initiateCellArray in MonthFragment - allows you to enrich your calendar with any kind of events.
 
-Now let's take a step back to SlidingMonthFragment. For now, initiateCellArray accepts [joda](http://www.joda.org/joda-time/)'s DateTime object, which points somewhere to current month and builds up an ArrayList with GridCellModell - one for each day in cell:
+Now let's take a step back to MonthFragment. For now, initiateCellArray accepts [joda](http://www.joda.org/joda-time/)'s DateTime object, which points somewhere to current month and builds up an ArrayList with DayModel - one for each day in cell:
 
 ```java
-private ArrayList<GridCellModel> initiateCellArray(DateTime dateTime) {
-    int emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
-    ArrayList<GridCellModel> days = new ArrayList<GridCellModel>();
+/**
+     * Based on this month's DateTime object calculates array of DayModel objects, that will be used to build grid.
+     *
+     * @param dateTime this month's DateTime
+     */
+    private List<DayModel> initiateCellArray(DateTime dateTime) {
+        int emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
+        List<DayModel> days = new ArrayList<DayModel>();
 
-    DateTime monthDateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(),
-        0, 0, 0);
-    emptyCellsAtStart = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
-    daysInMonth = monthDateTime.dayOfMonth().getMaximumValue();
-    emptyCellsInTheEnd = 7 - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
-    for(int i = 0; i < emptyCellsAtStart; i++) {
-        days.add(new GridCellModel());
+        DateTime monthDateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(),
+                0, 0, 0);
+        // how many "empty" days there are in the first week that pertain to previous month
+        emptyCellsAtStart = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
+
+        daysInMonth = monthDateTime.dayOfMonth().getMaximumValue();
+
+        // how many "empty" days there are after last month's day in the last week that pertain to next month
+        emptyCellsInTheEnd = CalendarAdapter.DAYS_OF_WEEK_COUNT - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
+
+        for (int i = 0; i < emptyCellsAtStart; i++) {
+            // for every "empty" cell create empty cell model
+            days.add(new DayModel());
+        }
+
+        for (int i = 0; i < daysInMonth; i++) {
+            // create cell for day of month and populate it with holiday if present
+            DayModel mModel = new DayModel().setDateTime(dateTime.withDayOfMonth(i + 1));
+
+            if (null != monthHolidays && !monthHolidays.isEmpty()) {
+                for (HolidayModel mHolidayModel : monthHolidays) {
+                    if (mHolidayModel.getDate().withTimeAtStartOfDay()
+                            .equals(mModel.getDateTime().withTimeAtStartOfDay())) {
+                        mModel.setHoliday(mHolidayModel);
+                        break;
+                    }
+                }
+            }
+
+            days.add(mModel);
+        }
+
+        for (int i = 0; i < emptyCellsInTheEnd; i++) {
+            // for every "empty" cell create empty cell model
+            days.add(new DayModel());
+        }
+
+        return days;
     }
-    for(int i = 0; i < daysInMonth; i++) {
-        GridCellModel mModel = new GridCellModel().setDateTime(dateTime.withDayOfMonth(i + 1));
-        days.add(mModel);
-    }
-    for(int i = 0; i < emptyCellsInTheEnd; i++) {
-        days.add(new GridCellModel());
-    }
-    return days;
-}
 ```
 
 As you can see, with the help of joda time library it pretty trivial: we get monthDateTime that points to first day in month, get the weekday number from it and calculate number of empty cells before the first day of month. Same way is for empty cells at the end.
 
-Then we use these ints in loops and create GridCellModel items.
+Then we use these ints in loops and create DayModel items.
 
-The last point is the getView method in grid adapter (MonthGridAdapter):
+The last point is the getView method in grid adapter (MonthAdapter):
 
 ```java
-@Override
-public View getView(int position, View view, ViewGroup viewGroup) {
-    GridCellModel day = days.get(position);
-    LayoutInflater mInflater = LayoutInflater.from(context);
-    ViewGroup cellView = (ViewGroup) mInflater.inflate(R.layout.grid_cell, viewGroup, false);
+    @Override
+    public View getView(int position, View convertView, ViewGroup viewGroup) {
+        ViewHolder holder;
+        if (convertView == null) {
+            convertView = mInflater.inflate(R.layout.grid_cell, viewGroup, false);
 
-    TextView dateTv = (TextView) cellView.findViewById(R.id.grid_cell_tv);
-    if(day.isEmptyCell()) {
-        cellView.setBackgroundResource(R.drawable.gridcell_inactive_selector);
-    } else {
-        dateTv.setText(Integer.toString(day.getDayNumber()));
-        if(day.isToday()) {
-            cellView.setBackgroundResource(R.drawable.gridcell_today_selector);
+            holder = new ViewHolder();
+            holder.textViewDate = (TextView) convertView.findViewById(R.id.grid_cell_tv);
+            holder.viewGroup = (ViewGroup) convertView;
+            convertView.setTag(holder);
+
         } else {
-            cellView.setBackgroundResource(R.drawable.gridcell_selector);
+            holder = (ViewHolder) convertView.getTag();
         }
-        if(day.isHoliday()) {
-            dateTv.setTextColor(context.getResources().getColor(android.R.color.holo_red_light));
+
+        DayModel day = getItem(position);
+
+        if (day.isEmptyCell()) {
+            holder.viewGroup.setBackgroundResource(R.drawable.gridcell_inactive_selector);
+        } else {
+            holder.textViewDate.setText(Integer.toString(day.getDayNumber()));
+            if (day.isToday()) {
+                holder.viewGroup.setBackgroundResource(R.drawable.gridcell_today_selector);
+            } else {
+                holder.viewGroup.setBackgroundResource(R.drawable.gridcell_selector);
+            }
+            if (day.isHoliday()) {
+                holder.textViewDate.setTextColor(context.getResources().getColor(R.color.holo_red_light));
+                holder.textViewDate.setTypeface(holder.textViewDate.getTypeface(), Typeface.BOLD);
+                TextView holidayName = new TextView(context);
+                holidayName.setText(day.getHoliday().getEnglishName());
+                holidayName.setMaxLines(MAX_LINES);
+                holidayName.setEllipsize(TextUtils.TruncateAt.END);
+                holder.viewGroup.addView(holidayName);
+            }
         }
+        holder.viewGroup.setMinimumHeight(expectedMinimumHeight);
+
+        return convertView;
     }
-    return cellView;
-}
+
 ```
 
-Nothing complex as you can see: having an array of days and current position we analyse current day's state (isEmptyCell(), day.isToday(), etc) and do corresponding changes to grid view.
-
-The whole structure looks like this:
-
-// calendar scheme
+Nothing complex as you can see: having the list of the days and current position we analyse current day's state (isEmptyCell(), day.isToday(), etc) and do corresponding changes to grid view.
 
 ## Putting data to grid
 
@@ -176,10 +229,10 @@ We will get holidays in json format from [Enrico Service](http://www.kayaposoft.
 
 So, in CalendarFragment I created obtainHolidays method, that queried Enrico and deserialized it to list of HolidayModel objects, that I created (I'm not providing more details since this is not related to calendar creation. You can see details in sample app code).
 
-Next, via setter-method I put obtained holidays to pager adapter, which are then used during creating a SlidingMonthFragment - I put into month's fragment only holidays for that month.
+Next, via setter-method I put obtained holidays to pager adapter, which are then used during creating a MonthFragment - I put into month's fragment only holidays for that month.
 
-In SlidingMonthFragment I need to process that data to use it in grid.
-First, in GridCellModel I added holiday field of HolidayModel type.
+In MonthFragment I need to process that data to use it in grid.
+First, in DayModel I added holiday field of HolidayModel type.
 Next, changed second for loop in initiateCellArray:
 
 ```java
@@ -193,7 +246,7 @@ if(!monthHolidays.isEmpty()) {
 }
 ```
 
-Now some GridCellModels will have info about holiday inside. We need to use that in GridView adapter's getView method. It was implemented with the following:
+Now some DayModels will have info about holiday inside. We need to use that in GridView adapter's getView method. It was implemented with the following:
 
 ```java
 if(day.isHoliday()) {
@@ -216,13 +269,13 @@ Grid cell is small and you can't put much info there. The great idea is to give 
 
 Whatever you deside to do in you onClick event - we need to develop OnItemClickListener for month's GridView.
 
-In SlidingMonthFragment's onCreateView we add this:
+In MonthFragment's onCreateView we add this:
 
 ```java
 monthGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        GridCellModel touchedCell = cellModels.get(position);
+        DayModel touchedCell = cellModels.get(position);
         if(!touchedCell.isEmptyCell()) {
             DateTime cellDateTime = touchedCell.getDateTime();
             String title, message;
