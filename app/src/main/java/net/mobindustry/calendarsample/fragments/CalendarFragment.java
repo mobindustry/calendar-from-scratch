@@ -15,14 +15,13 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.adapters.SlidingMonthAdapter;
+import net.mobindustry.calendarsample.adapters.CalendarAdapter;
 import net.mobindustry.calendarsample.model.HolidayModel;
 import net.mobindustry.calendarsample.model.HolidayModelRaw;
 import net.mobindustry.calendarsample.utils.ConnectivityCheck;
 
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -36,8 +35,27 @@ import java.util.List;
  */
 public class CalendarFragment extends Fragment {
 
+    public static final String PAGES_COUNT = "PAGES_COUNT";
+    public static final String HOLIDAYS_ENABLED = "HOLIDAYS_ENABLED";
+    public static final String OFFSET = "OFFSET";
+
+    /**
+     * source from where holidays could be loaded
+     */
     private static final String URL_HOLIDAYS = "http://www.kayaposoft.com/enrico/json/v1.0/?action=getPublicHolidaysForDateRange&fromDate=%1$s&toDate=%2$s&country=eng";
+
     private static final String DATE_OUTPUT_PATTERN = "dd-MM-yyyy";
+    private static final String HOLIDAYS_OBTAINED = "HOLIDAYS_OBTAINED";
+
+    /**
+     * Default total count of available pages(months).
+     */
+    private static final int DEFAULT_PAGES_COUNT = 30;
+
+    /**
+     * Default count of month could be scrolled back
+     */
+    private static final int DEFAULT_OFFSET = 5;
 
     private static final int MONTH_LEFT_OFFSET = 5;
     private static final int MONTH_RIGHT_OFFSET = 24;
@@ -46,7 +64,25 @@ public class CalendarFragment extends Fragment {
      * Pager that is responsible for swiping calendar months and recycling fragments.
      */
     private ViewPager pager;
-    private SlidingMonthAdapter adapter;
+    private CalendarAdapter adapter;
+
+    private boolean mHolidaysObtained = false;
+
+    private int mPagesCount = DEFAULT_PAGES_COUNT;
+    private int mOffset = DEFAULT_OFFSET;
+
+    private boolean mHolidaysEnabled = false;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            mPagesCount = args.getInt(PAGES_COUNT, DEFAULT_PAGES_COUNT);
+            mHolidaysEnabled = args.getBoolean(HOLIDAYS_ENABLED, false);
+            mOffset = args.getInt(OFFSET, DEFAULT_OFFSET);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,6 +93,10 @@ public class CalendarFragment extends Fragment {
         PagerTabStrip tabStrip = (PagerTabStrip) rootView.findViewById(R.id.calendar_pager_tab_strip);
         tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
 
+        if (savedInstanceState != null) {
+            mHolidaysObtained = savedInstanceState.getBoolean(HOLIDAYS_OBTAINED);
+        }
+
         setAdapter();
 
         return rootView;
@@ -65,9 +105,15 @@ public class CalendarFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (ConnectivityCheck.isInternetAvailable(getActivity())) {
+        if (mHolidaysEnabled && ConnectivityCheck.isInternetAvailable(getActivity()) && !mHolidaysObtained) {
             obtainHolidays();
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(HOLIDAYS_OBTAINED, mHolidaysObtained);
     }
 
     /**
@@ -84,9 +130,9 @@ public class CalendarFragment extends Fragment {
      * This method assigns the adapter to our view pager
      */
     private void setAdapter() {
-        adapter = new SlidingMonthAdapter(getActivity().getSupportFragmentManager());
+        adapter = new CalendarAdapter(getActivity().getSupportFragmentManager(), mPagesCount, mOffset);
         pager.setAdapter(adapter);
-        pager.setCurrentItem(SlidingMonthAdapter.OFFSET, false);
+        pager.setCurrentItem(mOffset, false);
     }
 
     /**
@@ -117,6 +163,7 @@ public class CalendarFragment extends Fragment {
                             holidaysList.add(new HolidayModel(temp));
                         }
                         onHolidaysLoaded(holidaysList);
+                        mHolidaysObtained = true;
                     }
                 }
             }
@@ -128,7 +175,7 @@ public class CalendarFragment extends Fragment {
         });
     }
 
-    public String byteArrayToString(byte[] array) {
+    private String byteArrayToString(byte[] array) {
         String mString;
         try {
             mString = new String(array, "UTF-8");

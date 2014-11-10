@@ -1,7 +1,10 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="activity_horizontal_margin">0dp</dimen>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_land_horizontal_margin">24dp</dimen>
+    <dimen name="activity_land_vertical_margin">24dp</dimen>
 
     <dimen name="calendar_tab_strip_textsize">12sp</dimen>
     <dimen name="weekday_textsize">12sp</dimen>

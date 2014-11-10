@@ -5,7 +5,7 @@ import org.joda.time.DateTime;
 /**
  * A class representing set of data for one day at month's grid.
  */
-public class GridCellModel {
+public class DayModel {
 
     private boolean isEmptyCell = false;
     private boolean isToday;
@@ -17,7 +17,7 @@ public class GridCellModel {
      */
     private DateTime dateTime;
 
-    public GridCellModel() {
+    public DayModel() {
         isEmptyCell = true;
         isToday = false;
         isHoliday = false;
@@ -28,7 +28,7 @@ public class GridCellModel {
         return dateTime;
     }
 
-    public GridCellModel setDateTime(DateTime dateTime) {
+    public DayModel setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
         this.isEmptyCell = false;
         DateTime now = DateTime.now();
@@ -52,7 +52,7 @@ public class GridCellModel {
         return isEmptyCell;
     }
 
-    public GridCellModel setEmptyCell(boolean isEmptyCell) {
+    public DayModel setEmptyCell(boolean isEmptyCell) {
         this.isEmptyCell = isEmptyCell;
         return this;
     }
@@ -61,7 +61,7 @@ public class GridCellModel {
         return isToday;
     }
 
-    public GridCellModel setToday(boolean isToday) {
+    public DayModel setToday(boolean isToday) {
         this.isToday = isToday;
         return this;
     }
@@ -70,7 +70,7 @@ public class GridCellModel {
         return isHoliday;
     }
 
-    public GridCellModel setHoliday(HolidayModel holiday) {
+    public DayModel setHoliday(HolidayModel holiday) {
         this.isHoliday = true;
         this.holiday = holiday;
         return this;

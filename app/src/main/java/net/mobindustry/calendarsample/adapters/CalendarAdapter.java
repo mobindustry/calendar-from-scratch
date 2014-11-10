@@ -3,8 +3,10 @@ package net.mobindustry.calendarsample.adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.SparseArray;
+import android.view.ViewGroup;
 
-import net.mobindustry.calendarsample.fragments.SlidingMonthFragment;
+import net.mobindustry.calendarsample.fragments.MonthFragment;
 import net.mobindustry.calendarsample.fragments.UpdateableFragment;
 import net.mobindustry.calendarsample.model.HolidayModel;
 
@@ -19,27 +21,33 @@ import java.util.Locale;
 /**
  * Adapter to create, switch and recycle properly "Month" fragments containing grid with days.
  */
-public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
+public class CalendarAdapter extends FragmentStatePagerAdapter {
 
-    /**
-     * Total number of available pages(months).<br>Increasing does not result in significant bigger ram usage
-     * since only 3 fragments are in memory at a time.
-     */
-    private static final int NUM_PAGES = 30;
     private static final int DAYS_OF_WEEK_COUNT = 7;
-
-    /**
-     * Number of months that can be scrolled back after opening calendar on default month.
-     * This gives ability to list calendar back.
-     */
-    public static final int OFFSET = 5;
-
     private static final String DATE_HEADER_FORMAT = "MMMM YYYY";
 
     private List<HolidayModel> holidays;
 
-    public SlidingMonthAdapter(FragmentManager mFragmentManager) {
+    /**
+     * array to store instantiated fragments in order to restore them and update
+     */
+    private SparseArray<Fragment> registeredFragments = new SparseArray<Fragment>();
+
+    /**
+     * Total count of months
+     */
+    private int mPagesCount;
+
+    /**
+     * Count of months that can be scrolled back after opening calendar on default month.
+     * This gives ability to list calendar back.
+     */
+    private int mOffset;
+
+    public CalendarAdapter(FragmentManager mFragmentManager, int pagesCount, int offset) {
         super(mFragmentManager);
+        this.mPagesCount = pagesCount;
+        this.mOffset = offset;
     }
 
     @Override
@@ -49,16 +57,12 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getItemPosition(Object object) {
-        if (object instanceof UpdateableFragment) {
-            UpdateableFragment updateableFragment = (UpdateableFragment) object;
-            updateableFragment.update(prepareHolidaysForMonth(updateableFragment.getDateTime()));
-        }
         return super.getItemPosition(object);
     }
 
     @Override
     public int getCount() {
-        return NUM_PAGES;
+        return mPagesCount;
     }
 
     @Override
@@ -67,10 +71,23 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         return calculateDateTime(getPositionWithOffset(position)).toString(DATE_HEADER_FORMAT, Locale.getDefault());
     }
 
-    private SlidingMonthFragment createFragment(int month) {
-        SlidingMonthFragment mFragment = new SlidingMonthFragment();
+    @Override
+    public Object instantiateItem(ViewGroup container, int position) {
+        Fragment fragment = (Fragment) super.instantiateItem(container, position);
+        registeredFragments.put(position, fragment);
+        return fragment;
+    }
+
+    @Override
+    public void destroyItem(ViewGroup container, int position, Object object) {
+        registeredFragments.remove(position);
+        super.destroyItem(container, position, object);
+    }
+
+    private MonthFragment createFragment(int month) {
+        MonthFragment mFragment = new MonthFragment();
         mFragment.setDateTime(calculateDateTime(month));
-        mFragment.setWeekdayNames(buildWeekdayNames());
+        mFragment.setWeekdayNames(generateWeekdayNames());
         mFragment.setMonthHolidays(prepareHolidaysForMonth(mFragment.getDateTime()));
         return mFragment;
     }
@@ -82,7 +99,7 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
      * @return position with offset.
      */
     private int getPositionWithOffset(int adapterPosition) {
-        return adapterPosition - OFFSET;
+        return adapterPosition - mOffset;
     }
 
     /**
@@ -104,14 +121,13 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
      *
      * @return array of weekday names
      */
-    private String[] buildWeekdayNames() {
+    private String[] generateWeekdayNames() {
         String[] weekNames = new String[DAYS_OF_WEEK_COUNT];
         for (int i = 0; i < weekNames.length; i++) {
             DateTime dt = new DateTime().withDayOfWeek(i + 1);
             DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE");
             weekNames[i] = fmt.print(dt);
         }
-
         return weekNames;
     }
 
@@ -120,14 +136,27 @@ public class SlidingMonthAdapter extends FragmentStatePagerAdapter {
         notifyDataSetChanged();
     }
 
+    @Override
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
+        for (int i = 0; i < registeredFragments.size(); i++) {
+            // get the object by the key.
+            Fragment f = registeredFragments.valueAt(i);
+            //try to update current fragments
+            if (f instanceof UpdateableFragment) {
+                ((UpdateableFragment) f).update(prepareHolidaysForMonth(((UpdateableFragment) f).getDateTime()));
+            }
+        }
+    }
+
     /**
      * Looks through all holidays array and returns only those that are for given month.
      *
      * @param currentDateTime DateTime from given month.
      * @return ArrayList of HolidayModel objects for that month.
      */
-    private List<HolidayModel> prepareHolidaysForMonth(DateTime currentDateTime) {
-        List<HolidayModel> monthHolidays = new ArrayList<HolidayModel>();
+    private ArrayList<HolidayModel> prepareHolidaysForMonth(DateTime currentDateTime) {
+        ArrayList<HolidayModel> monthHolidays = new ArrayList<HolidayModel>();
         if (holidays != null) {
             int currentYear, currentMonth;
             currentYear = currentDateTime.getYear();

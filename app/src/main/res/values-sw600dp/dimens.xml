@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="activity_horizontal_margin">32dp</dimen>
+
+    <dimen name="activity_land_horizontal_margin">64dp</dimen>
+    <dimen name="activity_land_vertical_margin">64dp</dimen>
+
+    <dimen name="calendar_tab_strip_textsize">12sp</dimen>
+    <dimen name="gridcell_daynumber_textsize">24sp</dimen>
+
+    <dimen name="gridcell_padding">3dp</dimen>
+
+</resources>

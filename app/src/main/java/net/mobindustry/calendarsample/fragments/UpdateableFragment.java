@@ -4,10 +4,10 @@ import net.mobindustry.calendarsample.model.HolidayModel;
 
 import org.joda.time.DateTime;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public interface UpdateableFragment {
-    public void update(List<HolidayModel> holidays);
+    public void update(ArrayList<HolidayModel> holidays);
 
     public DateTime getDateTime();
 }

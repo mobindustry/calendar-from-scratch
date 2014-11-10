@@ -21,10 +21,10 @@
         </activity>
 
       <activity android:name=".activities.CalendarActivity"
-                android:screenOrientation="portrait"/>
+                />
 
         <activity android:name=".activities.CaldroidSampleActivity"
-            android:screenOrientation="portrait"/>
+            />
 
     </application>
 
