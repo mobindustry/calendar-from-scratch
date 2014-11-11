@@ -1,8 +1,7 @@
-package net.mobindustry.calendarsample.fragments;
+package net.mobindustry.calendarsample.calendar_from_scratch;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,13 +9,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.Toast;
-
-import net.mobindustry.calendarsample.adapters.MonthAdapter;
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.model.DayModel;
-import net.mobindustry.calendarsample.model.HolidayModel;
-
+import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
+import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -41,6 +36,7 @@ public class MonthFragment extends Fragment implements UpdateableFragment {
     private List<DayModel> cellModels;
 
     private MonthAdapter adapter;
+    private CalendarListener calendarListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,11 +61,22 @@ public class MonthFragment extends Fragment implements UpdateableFragment {
         monthGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                showDialogOnCellTouch(cellModels.get(position));
+                if (calendarListener != null) {
+                    calendarListener.onDateSelected(cellModels.get(position));
+                }
             }
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            CalendarFragment calendarFragment = (CalendarFragment) getFragmentManager().findFragmentByTag(CalendarFragment.TAG);
+            this.calendarListener = calendarFragment.getCalendarListener();
+        }
     }
 
     @Override
@@ -82,6 +89,10 @@ public class MonthFragment extends Fragment implements UpdateableFragment {
 
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public void setCalendarListener(CalendarListener calendarListener) {
+        this.calendarListener = calendarListener;
     }
 
     @Override
@@ -161,36 +172,5 @@ public class MonthFragment extends Fragment implements UpdateableFragment {
         this.weekdayNames = weekdayNames;
     }
 
-    /**
-     * Build and shows dialog on cell touch.
-     *
-     * @param touchedCell GridCellModel object for that day.
-     */
-    private void showDialogOnCellTouch(DayModel touchedCell) {
-        if (!touchedCell.isEmptyCell()) {
-            DateTime cellDateTime = touchedCell.getDateTime();
-            String title, message;
-            title = cellDateTime.toString("dd.MM.yyyy");
-            message = cellDateTime.toString("dd MMMM yyyy");
-            if (touchedCell.isToday()) {
-                message += "\nToday";
-            }
-            if (touchedCell.isHoliday()) {
-                message += "\n" + touchedCell.getHoliday().getEnglishName();
-            }
 
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-            dialogBuilder.setTitle(title)
-                    .setMessage(message)
-                    .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    })
-                    .create().show();
-        } else {
-            Toast.makeText(getActivity(), "Empty cell", Toast.LENGTH_SHORT).show();
-        }
-    }
 }

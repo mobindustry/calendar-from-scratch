@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.model;
+package net.mobindustry.calendarsample.calendar_from_scratch.model;
 
 import com.google.gson.annotations.SerializedName;
 

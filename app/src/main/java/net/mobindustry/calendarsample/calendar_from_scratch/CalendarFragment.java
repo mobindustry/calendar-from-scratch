@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.fragments;
+package net.mobindustry.calendarsample.calendar_from_scratch;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,17 +9,13 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.adapters.CalendarAdapter;
-import net.mobindustry.calendarsample.model.HolidayModel;
-import net.mobindustry.calendarsample.model.HolidayModelRaw;
-import net.mobindustry.calendarsample.utils.ConnectivityCheck;
-
+import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
+import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModelRaw;
+import net.mobindustry.calendarsample.calendar_from_scratch.utils.ConnectivityCheck;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.joda.time.DateTime;
@@ -38,6 +34,7 @@ public class CalendarFragment extends Fragment {
     public static final String PAGES_COUNT = "PAGES_COUNT";
     public static final String HOLIDAYS_ENABLED = "HOLIDAYS_ENABLED";
     public static final String OFFSET = "OFFSET";
+    public static final String TAG = CalendarFragment.class.getSimpleName();
 
     /**
      * source from where holidays could be loaded
@@ -60,10 +57,13 @@ public class CalendarFragment extends Fragment {
     private static final int MONTH_LEFT_OFFSET = 5;
     private static final int MONTH_RIGHT_OFFSET = 24;
 
+    private static final float DEFAULT_HEADER_TEXT_SIZE = 24.0f;
+
     /**
      * Pager that is responsible for swiping calendar months and recycling fragments.
      */
     private ViewPager pager;
+
     private CalendarAdapter adapter;
 
     private boolean mHolidaysObtained = false;
@@ -72,6 +72,8 @@ public class CalendarFragment extends Fragment {
     private int mOffset = DEFAULT_OFFSET;
 
     private boolean mHolidaysEnabled = false;
+
+    private CalendarListener calendarListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,8 +93,7 @@ public class CalendarFragment extends Fragment {
         pager = (ViewPager) rootView.findViewById(R.id.calendar_pager);
 
         PagerTabStrip tabStrip = (PagerTabStrip) rootView.findViewById(R.id.calendar_pager_tab_strip);
-        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
-
+        tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_HEADER_TEXT_SIZE);
         if (savedInstanceState != null) {
             mHolidaysObtained = savedInstanceState.getBoolean(HOLIDAYS_OBTAINED);
         }
@@ -117,6 +118,22 @@ public class CalendarFragment extends Fragment {
     }
 
     /**
+     * set listener which returns events from the calendar
+     * @param calendarListener listener instance
+     */
+    public void setCalendarListener(CalendarListener calendarListener) {
+        this.calendarListener = calendarListener;
+    }
+
+    /**
+     * get listener which returns events from the calendsar
+     * @return calendarListener listener instance
+     */
+    public CalendarListener getCalendarListener() {
+        return calendarListener;
+    }
+
+    /**
      * This method will be called after loading holidays is done.
      * Updates our adapter with holidays
      *
@@ -131,12 +148,13 @@ public class CalendarFragment extends Fragment {
      */
     private void setAdapter() {
         adapter = new CalendarAdapter(getActivity().getSupportFragmentManager(), mPagesCount, mOffset);
+        adapter.setCalendarListener(calendarListener);
         pager.setAdapter(adapter);
         pager.setCurrentItem(mOffset, false);
     }
 
     /**
-     * Queries for holidays, parses them to ArrayList of {@link net.mobindustry.calendarsample.model.HolidayModel} objects.
+     * Queries for holidays, parses them to ArrayList of {@link net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel} objects.
      * On success or fail - calls onHolidaysLoaded.
      */
     private void obtainHolidays() {
