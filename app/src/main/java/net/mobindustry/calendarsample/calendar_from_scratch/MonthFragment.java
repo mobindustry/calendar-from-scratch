@@ -125,22 +125,29 @@ public class MonthFragment extends Fragment implements UpdateableFragment {
      * @param dateTime this month's DateTime
      */
     private List<DayModel> initiateCellArray(DateTime dateTime) {
-        int emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
+        int previousDaysInMonth, daysInMonth, nextDaysInMonth;
         List<DayModel> days = new ArrayList<DayModel>();
 
-        DateTime monthDateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(),
+        int year = dateTime.getYear();
+        int month = dateTime.getMonthOfYear();
+        int day = dateTime.getDayOfMonth();
+
+        DateTime monthDateTime = new DateTime(year, month, day,
                 0, 0, 0);
+
         // how many "empty" days there are in the first week that pertain to previous month
-        emptyCellsAtStart = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
+        previousDaysInMonth = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
 
         daysInMonth = monthDateTime.dayOfMonth().getMaximumValue();
 
         // how many "empty" days there are after last month's day in the last week that pertain to next month
-        emptyCellsInTheEnd = 7 - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
+        nextDaysInMonth = 7 - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
 
-        for (int i = 0; i < emptyCellsAtStart; i++) {
+        for (int i = 0; i < previousDaysInMonth; i++) {
             // for every "empty" cell create empty cell model
-            days.add(new DayModel());
+            DayModel mModel = new DayModel().setDateTime(dateTime.withDayOfMonth(1).plusDays(i - previousDaysInMonth));
+            mModel.setPreviousOrLast(true);
+            days.add(mModel);
         }
 
         for (int i = 0; i < daysInMonth; i++) {
@@ -160,9 +167,11 @@ public class MonthFragment extends Fragment implements UpdateableFragment {
             days.add(mModel);
         }
 
-        for (int i = 0; i < emptyCellsInTheEnd; i++) {
+        for (int i = 0; i < nextDaysInMonth; i++) {
             // for every "empty" cell create empty cell model
-            days.add(new DayModel());
+            DayModel mModel = new DayModel().setDateTime(dateTime.withDayOfMonth(daysInMonth).plusDays(i + 1));
+            mModel.setPreviousOrLast(true);
+            days.add(mModel);
         }
 
         return days;

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
 import net.mobindustry.calendarsample.R;
 import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
 
@@ -60,25 +61,30 @@ public class MonthAdapter extends BaseAdapter {
 
         DayModel day = getItem(position);
 
-        if (day.isEmptyCell()) {
+        holder.textViewDate.setText(Integer.toString(day.getDayNumber()));
+
+        if (day.isPreviousOrLast()) {
+            holder.textViewDate.setTextColor(context.getResources().getColor(R.color.newcal_gridcell_stroke));
             holder.viewGroup.setBackgroundResource(R.drawable.gridcell_inactive_selector);
         } else {
-            holder.textViewDate.setText(Integer.toString(day.getDayNumber()));
+            if (day.isWeekend()) {
+                holder.textViewDate.setTextColor(context.getResources().getColor(R.color.holo_red_light));
+            }
+
             if (day.isToday()) {
                 holder.viewGroup.setBackgroundResource(R.drawable.gridcell_today_selector);
             } else {
                 holder.viewGroup.setBackgroundResource(R.drawable.gridcell_selector);
             }
+
             if (day.isHoliday()) {
-                holder.textViewDate.setTextColor(context.getResources().getColor(R.color.holo_red_light));
-                holder.textViewDate.setTypeface(holder.textViewDate.getTypeface(), Typeface.BOLD);
-                TextView holidayName = new TextView(context);
-                holidayName.setText(day.getHoliday().getEnglishName());
-                holidayName.setMaxLines(MAX_LINES);
-                holidayName.setEllipsize(TextUtils.TruncateAt.END);
-                holder.viewGroup.addView(holidayName);
+                holder.textViewDate.setTextColor(context.getResources().getColor(android.R.color.white));
+                holder.viewGroup.setBackgroundResource(R.drawable.gridcell_holiday_selector);
             }
         }
+
+
+
         holder.viewGroup.setMinimumHeight(expectedMinimumHeight);
 
         return convertView;
@@ -114,6 +120,7 @@ public class MonthAdapter extends BaseAdapter {
 
     private static class ViewHolder {
         private TextView textViewDate;
+        private TextView textViewHoliday;
         private ViewGroup viewGroup;
     }
 }

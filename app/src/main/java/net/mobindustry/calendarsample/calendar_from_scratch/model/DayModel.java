@@ -7,9 +7,12 @@ import org.joda.time.DateTime;
  */
 public class DayModel {
 
-    private boolean isEmptyCell = false;
+    private final static int SATURDAY = 6;
+    private final static int SUNDAY = 7;
+
     private boolean isToday;
     private boolean isHoliday;
+    private boolean isPreviousOrLast = false;
     private HolidayModel holiday;
 
     /**
@@ -18,7 +21,6 @@ public class DayModel {
     private DateTime dateTime;
 
     public DayModel() {
-        isEmptyCell = true;
         isToday = false;
         isHoliday = false;
         dateTime = null;
@@ -30,31 +32,17 @@ public class DayModel {
 
     public DayModel setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
-        this.isEmptyCell = false;
         DateTime now = DateTime.now();
-        if(dateTime.getDayOfMonth() == now.getDayOfMonth() &&
-            dateTime.getMonthOfYear() == now.getMonthOfYear()
-            && dateTime.getYear() == now.getYear()) {
+        if (dateTime.getDayOfMonth() == now.getDayOfMonth() &&
+                dateTime.getMonthOfYear() == now.getMonthOfYear()
+                && dateTime.getYear() == now.getYear()) {
             isToday = true;
         }
         return this;
     }
 
     public int getDayNumber() {
-        if(!isEmptyCell()) {
-            return dateTime.getDayOfMonth();
-        } else {
-            return -1;
-        }
-    }
-
-    public boolean isEmptyCell() {
-        return isEmptyCell;
-    }
-
-    public DayModel setEmptyCell(boolean isEmptyCell) {
-        this.isEmptyCell = isEmptyCell;
-        return this;
+        return dateTime.getDayOfMonth();
     }
 
     public boolean isToday() {
@@ -66,6 +54,14 @@ public class DayModel {
         return this;
     }
 
+    public boolean isPreviousOrLast() {
+        return isPreviousOrLast;
+    }
+
+    public void setPreviousOrLast(boolean isPreviousOrLast) {
+        this.isPreviousOrLast = isPreviousOrLast;
+    }
+
     public boolean isHoliday() {
         return isHoliday;
     }
@@ -74,6 +70,11 @@ public class DayModel {
         this.isHoliday = true;
         this.holiday = holiday;
         return this;
+    }
+
+    public boolean isWeekend() {
+        return dateTime.getDayOfWeek() == SATURDAY || dateTime.getDayOfWeek() == SUNDAY;
+
     }
 
     public HolidayModel getHoliday() {

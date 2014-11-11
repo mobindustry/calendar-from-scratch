@@ -59,7 +59,7 @@ public class CalendarActivity extends FragmentActivity {
      * @param touchedCell GridCellModel object for that day.
      */
     private void showDialogOnCellTouch(DayModel touchedCell) {
-        if (!touchedCell.isEmptyCell()) {
+        if (!touchedCell.isPreviousOrLast()) {
             DateTime cellDateTime = touchedCell.getDateTime();
             String title, message;
             title = cellDateTime.toString("dd.MM.yyyy");
