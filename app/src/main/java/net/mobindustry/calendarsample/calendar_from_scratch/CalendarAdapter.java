@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.adapters;
+package net.mobindustry.calendarsample.calendar_from_scratch;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -6,9 +6,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
-import net.mobindustry.calendarsample.fragments.MonthFragment;
-import net.mobindustry.calendarsample.fragments.UpdateableFragment;
-import net.mobindustry.calendarsample.model.HolidayModel;
+import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -44,10 +42,16 @@ public class CalendarAdapter extends FragmentStatePagerAdapter {
      */
     private int mOffset;
 
+    private CalendarListener calendarListener;
+
     public CalendarAdapter(FragmentManager mFragmentManager, int pagesCount, int offset) {
         super(mFragmentManager);
         this.mPagesCount = pagesCount;
         this.mOffset = offset;
+    }
+
+    public void setCalendarListener(CalendarListener calendarListener) {
+        this.calendarListener = calendarListener;
     }
 
     @Override
@@ -88,6 +92,7 @@ public class CalendarAdapter extends FragmentStatePagerAdapter {
         MonthFragment mFragment = new MonthFragment();
         mFragment.setDateTime(calculateDateTime(month));
         mFragment.setWeekdayNames(generateWeekdayNames());
+        mFragment.setCalendarListener(calendarListener);
         mFragment.setMonthHolidays(prepareHolidaysForMonth(mFragment.getDateTime()));
         return mFragment;
     }

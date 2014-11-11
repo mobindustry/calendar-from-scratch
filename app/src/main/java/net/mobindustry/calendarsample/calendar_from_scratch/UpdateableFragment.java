@@ -1,6 +1,6 @@
-package net.mobindustry.calendarsample.fragments;
+package net.mobindustry.calendarsample.calendar_from_scratch;
 
-import net.mobindustry.calendarsample.model.HolidayModel;
+import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
 
 import org.joda.time.DateTime;
 

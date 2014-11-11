@@ -23,8 +23,6 @@
       <activity android:name=".activities.CalendarActivity"
                 />
 
-        <activity android:name=".activities.CaldroidSampleActivity"
-            />
 
     </application>
 

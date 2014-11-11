@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.adapters;
+package net.mobindustry.calendarsample.calendar_from_scratch;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -12,7 +12,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.model.DayModel;
+import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
 
 import java.util.List;
 
@@ -108,11 +108,9 @@ public class MonthAdapter extends BaseAdapter {
     private int calculateMinimumHeight() {
         int orientation = context.getResources().getConfiguration().orientation;
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        int padding = orientation == Configuration.ORIENTATION_PORTRAIT ?
-                context.getResources().getDimensionPixelSize(R.dimen.activity_horizontal_margin) :
-                context.getResources().getDimensionPixelSize(R.dimen.activity_land_horizontal_margin);
-        int dpWidth = displayMetrics.widthPixels - (2 * padding);
-        return dpWidth / DAYS_COUNT;
+        int base = orientation == Configuration.ORIENTATION_LANDSCAPE ?
+                displayMetrics.heightPixels : displayMetrics.widthPixels;
+        return base / DAYS_COUNT;
     }
 
     private static class ViewHolder {

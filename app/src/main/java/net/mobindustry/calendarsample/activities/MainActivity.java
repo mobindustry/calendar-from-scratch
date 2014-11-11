@@ -16,29 +16,10 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity_layout);
 
-        findViewById(R.id.standardCalendarButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //supported only from API 11
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    showCalendarActivity(CalendarActivity.CalendarType.STANDARD);
-                } else {
-                    Toast.makeText(MainActivity.this, "This is unsupported API Level!", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
         findViewById(R.id.customCalendarButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showCalendarActivity(CalendarActivity.CalendarType.CUSTOM_MOBINDUSTRY);
-            }
-        });
-
-        findViewById(R.id.anotherCalendarButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, CaldroidSampleActivity.class));
             }
         });
 
