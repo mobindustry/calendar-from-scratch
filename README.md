@@ -9,6 +9,39 @@ Note that I did not intend to create a calendar that can show you months from no
 For me - throwing away this super-flexibility was a relief, because it made my code much simpler.
 Now to the point!
 
+<img src="https://raw.githubusercontent.com/mobindustry/calendar-from-scratch/master/device-2014-11-11-135729.png" width="270" style="margin-left:10px;">
+
+## How to use
+
+First of all, we expect our app to contain not just this calendar, so we have it wrapped to CalendarFragment, that is shown in MainActivity and can be replaced by any other screen:
+
+```java
+  CalendarFragment calendarFragment = new CalendarFragment();
+  getSupportFragmentManager().beginTransaction().add(R.id.container, calendarFragment, CalendarFragment.TAG).commit();
+```
+Also, you could add some arguments to the fragment, so that to customize it a little. For example, we have an argument, that defines wether we will load holidays or not.
+
+```java
+  Bundle args = new Bundle();
+  args.putBoolean(CalendarFragment.HOLIDAYS_ENABLED, true);
+  calendarFragment.setArguments(args);
+```
+Of course, you could set listener to get click events from calendar.
+
+```java
+    private CalendarListener listener = new CalendarListener() {
+        @Override
+        public void onDateSelected(DayModel dayModel) {
+            showDialogOnCellTouch(dayModel);
+        }
+    };
+    
+    
+    
+    calendarFragment.setCalendarListener(listener);
+```
+
+
 ## Structure
 
 First of all, we expect our app to contain not just this calendar, so we have it wrapped to CalendarFragment, that is shown in MainActivity and can be replaced by any other screen:
@@ -22,17 +55,6 @@ public class CalendarFragment extends Fragment {
     private ViewPager pager;
     
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
-        if (args != null) {
-            mPagesCount = args.getInt(PAGES_COUNT, DEFAULT_PAGES_COUNT);
-            mHolidaysEnabled = args.getBoolean(HOLIDAYS_ENABLED, false);
-            mOffset = args.getInt(OFFSET, DEFAULT_OFFSET);
-        }
-    }
-    
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_calendar, container, false);
 
@@ -40,10 +62,6 @@ public class CalendarFragment extends Fragment {
 
         PagerTabStrip tabStrip = (PagerTabStrip) rootView.findViewById(R.id.calendar_pager_tab_strip);
         tabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, getActivity().getResources().getDimension(R.dimen.calendar_tab_strip_textsize));
-
-        if (savedInstanceState != null) {
-            mHolidaysObtained = savedInstanceState.getBoolean(HOLIDAYS_OBTAINED);
-        }
 
         setAdapter();
 
@@ -265,9 +283,14 @@ Now some days display in red bold and have a holiday name displayed under date.
 
 ## Handle grid cell clicks
 
-Grid cell is small and you can't put much info there. The great idea is to give out a dialog-style window with properly formatted info on day that was clicked. It can even be a new activity or you can push some interface below month grid when a day cell gets tapped.
+We have created interface CalendarListener:
+```java
+public interface CalendarListener {
 
-Whatever you deside to do in you onClick event - we need to develop OnItemClickListener for month's GridView.
+    public void onDateSelected(DayModel dayModel);
+}
+```
+It hase one method, which called when user clicks the item on the grid view.
 
 In MonthFragment's onCreateView we add this:
 
@@ -275,38 +298,20 @@ In MonthFragment's onCreateView we add this:
 monthGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        DayModel touchedCell = cellModels.get(position);
-        if(!touchedCell.isEmptyCell()) {
-            DateTime cellDateTime = touchedCell.getDateTime();
-            String title, message;
-            title = cellDateTime.toString("dd.MM.yyyy");
-            message = cellDateTime.toString("dd MMMM yyyy");
-            if(touchedCell.isToday()) {
-                message += "\nToday";
-            }
-            if(touchedCell.isHoliday()) {
-                message += "\n" + touchedCell.getHoliday().getEnglishName();
-            }
-
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-            dialogBuilder.setTitle(title)
-                .setMessage(message)
-                .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                })
-                .create().show();
-        } else {
-            Toast.makeText(getActivity(), "Empty cell", Toast.LENGTH_SHORT).show();
-        }
-    }
+      if (calendarListener != null) {
+          calendarListener.onDateSelected(cellModels.get(position));
+      }
+   }
 });
 ```
 
-an AlertDialog-styled window will show up for a non-empty cell. This is just to give you an idea how this can be done.
+We use FragmentStatePagerAdapter to use memory efficiently, so we should add some code to our activity class, so that our listener will restore after user rotates the phone.
 
+```java
+CalendarFragment calendarFragment = (CalendarFragment) getSupportFragmentManager()
+            .findFragmentByTag(CalendarFragment.TAG);
+calendarFragment.setCalendarListener(listener);
+```
 ## Almost "The end"
 
 So, to sum everything up - this is the way you can implement a calendar for your app. Remember that this is not a ready-to-use library, where you can extend and override here and there and forget about hard work. This is more like a set of milestones that I've met on the way from bare idea of building a calendar from scratch to the finished sample.
