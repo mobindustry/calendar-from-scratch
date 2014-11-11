@@ -9,7 +9,7 @@ Note that I did not intend to create a calendar that can show you months from no
 For me - throwing away this super-flexibility was a relief, because it made my code much simpler.
 Now to the point!
 
-<img src="https://raw.githubusercontent.com/mobindustry/calendar-from-scratch/master/device-2014-11-11-135729.png" width="270" style="margin-left:10px;">
+<img src="https://raw.githubusercontent.com/mobindustry/calendar-from-scratch/master/device-2014-11-11-164456.png" width="270" style="margin-left:10px;">
 
 ## How to use
 
@@ -135,28 +135,35 @@ This is the place where you can code more fields to hold your data. With supplem
 Now let's take a step back to MonthFragment. For now, initiateCellArray accepts [joda](http://www.joda.org/joda-time/)'s DateTime object, which points somewhere to current month and builds up an ArrayList with DayModel - one for each day in cell:
 
 ```java
-/**
+     /**
      * Based on this month's DateTime object calculates array of DayModel objects, that will be used to build grid.
      *
      * @param dateTime this month's DateTime
      */
     private List<DayModel> initiateCellArray(DateTime dateTime) {
-        int emptyCellsAtStart, daysInMonth, emptyCellsInTheEnd;
+        int previousDaysInMonth, daysInMonth, nextDaysInMonth;
         List<DayModel> days = new ArrayList<DayModel>();
 
-        DateTime monthDateTime = new DateTime(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(),
+        int year = dateTime.getYear();
+        int month = dateTime.getMonthOfYear();
+        int day = dateTime.getDayOfMonth();
+
+        DateTime monthDateTime = new DateTime(year, month, day,
                 0, 0, 0);
+
         // how many "empty" days there are in the first week that pertain to previous month
-        emptyCellsAtStart = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
+        previousDaysInMonth = monthDateTime.withDayOfMonth(1).getDayOfWeek() - 1;
 
         daysInMonth = monthDateTime.dayOfMonth().getMaximumValue();
 
         // how many "empty" days there are after last month's day in the last week that pertain to next month
-        emptyCellsInTheEnd = CalendarAdapter.DAYS_OF_WEEK_COUNT - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
+        nextDaysInMonth = 7 - monthDateTime.withDayOfMonth(daysInMonth).getDayOfWeek();
 
-        for (int i = 0; i < emptyCellsAtStart; i++) {
+        for (int i = 0; i < previousDaysInMonth; i++) {
             // for every "empty" cell create empty cell model
-            days.add(new DayModel());
+            DayModel mModel = new DayModel().setDateTime(dateTime.withDayOfMonth(1).plusDays(i - previousDaysInMonth));
+            mModel.setPreviousOrLast(true);
+            days.add(mModel);
         }
 
         for (int i = 0; i < daysInMonth; i++) {
@@ -176,9 +183,11 @@ Now let's take a step back to MonthFragment. For now, initiateCellArray accepts 
             days.add(mModel);
         }
 
-        for (int i = 0; i < emptyCellsInTheEnd; i++) {
+        for (int i = 0; i < nextDaysInMonth; i++) {
             // for every "empty" cell create empty cell model
-            days.add(new DayModel());
+            DayModel mModel = new DayModel().setDateTime(dateTime.withDayOfMonth(daysInMonth).plusDays(i + 1));
+            mModel.setPreviousOrLast(true);
+            days.add(mModel);
         }
 
         return days;
@@ -209,25 +218,28 @@ The last point is the getView method in grid adapter (MonthAdapter):
 
         DayModel day = getItem(position);
 
-        if (day.isEmptyCell()) {
+        holder.textViewDate.setText(Integer.toString(day.getDayNumber()));
+
+        if (day.isPreviousOrLast()) {
+            holder.textViewDate.setTextColor(context.getResources().getColor(R.color.newcal_gridcell_stroke));
             holder.viewGroup.setBackgroundResource(R.drawable.gridcell_inactive_selector);
         } else {
-            holder.textViewDate.setText(Integer.toString(day.getDayNumber()));
+            if (day.isWeekend()) {
+                holder.textViewDate.setTextColor(context.getResources().getColor(R.color.holo_red_light));
+            }
+
             if (day.isToday()) {
                 holder.viewGroup.setBackgroundResource(R.drawable.gridcell_today_selector);
             } else {
                 holder.viewGroup.setBackgroundResource(R.drawable.gridcell_selector);
             }
+
             if (day.isHoliday()) {
-                holder.textViewDate.setTextColor(context.getResources().getColor(R.color.holo_red_light));
-                holder.textViewDate.setTypeface(holder.textViewDate.getTypeface(), Typeface.BOLD);
-                TextView holidayName = new TextView(context);
-                holidayName.setText(day.getHoliday().getEnglishName());
-                holidayName.setMaxLines(MAX_LINES);
-                holidayName.setEllipsize(TextUtils.TruncateAt.END);
-                holder.viewGroup.addView(holidayName);
+                holder.textViewDate.setTextColor(context.getResources().getColor(android.R.color.white));
+                holder.viewGroup.setBackgroundResource(R.drawable.gridcell_holiday_selector);
             }
         }
+
         holder.viewGroup.setMinimumHeight(expectedMinimumHeight);
 
         return convertView;
@@ -267,16 +279,11 @@ if(!monthHolidays.isEmpty()) {
 Now some DayModels will have info about holiday inside. We need to use that in GridView adapter's getView method. It was implemented with the following:
 
 ```java
-if(day.isHoliday()) {
-    dateTv.setTextColor(context.getResources().getColor(android.R.color.holo_red_light));
-    dateTv.setTypeface(dateTv.getTypeface(), Typeface.BOLD);
-    TextView holidayName = new TextView(context);
-    holidayName.setText(day.getHoliday().getEnglishName());
-    holidayName.setTextSize(10);
-    holidayName.setMaxLines(2);
-    holidayName.setEllipsize(TextUtils.TruncateAt.END);
-    cellView.addView(holidayName);
-}
+  if (day.isHoliday()) {
+     holder.textViewDate.setTextColor(context.getResources().getColor(android.R.color.white));
+     holder.viewGroup.setBackgroundResource(R.drawable.gridcell_holiday_selector);
+  }
+
 ```
 
 Now some days display in red bold and have a holiday name displayed under date.
