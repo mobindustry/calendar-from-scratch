@@ -1,9 +1,7 @@
-package net.mobindustry.calendarsample.calendar_from_scratch;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Typeface;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.DayModel;
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
 
 import java.util.List;
 
@@ -82,8 +80,6 @@ public class MonthAdapter extends BaseAdapter {
                 holder.viewGroup.setBackgroundResource(R.drawable.gridcell_holiday_selector);
             }
         }
-
-
 
         holder.viewGroup.setMinimumHeight(expectedMinimumHeight);
 

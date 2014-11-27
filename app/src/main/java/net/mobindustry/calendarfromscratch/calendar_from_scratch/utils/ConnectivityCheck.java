@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.calendar_from_scratch.utils;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

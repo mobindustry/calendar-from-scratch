@@ -1,6 +1,6 @@
-package net.mobindustry.calendarsample.calendar_from_scratch;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch;
 
-import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.DayModel;
 
 /**
  * Created by Edward on 11.11.14.

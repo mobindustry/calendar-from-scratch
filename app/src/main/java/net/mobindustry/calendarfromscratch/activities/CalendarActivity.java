@@ -1,14 +1,16 @@
-package net.mobindustry.calendarsample.activities;
+package net.mobindustry.calendarfromscratch.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
+
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.CalendarFragment;
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.CalendarListener;
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.DayModel;
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.calendar_from_scratch.CalendarFragment;
-import net.mobindustry.calendarsample.calendar_from_scratch.CalendarListener;
-import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
+
 import org.joda.time.DateTime;
 
 public class CalendarActivity extends FragmentActivity {

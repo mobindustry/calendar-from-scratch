@@ -1,6 +1,8 @@
-package net.mobindustry.calendarsample.calendar_from_scratch;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch;
 
-import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
+
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.HolidayModel;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;

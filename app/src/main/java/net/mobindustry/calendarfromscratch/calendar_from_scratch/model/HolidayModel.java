@@ -1,7 +1,8 @@
-package net.mobindustry.calendarsample.calendar_from_scratch.model;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import org.joda.time.DateTime;
 
 /**

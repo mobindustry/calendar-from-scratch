@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.calendar_from_scratch;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,13 +9,17 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+
+
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.HolidayModel;
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.HolidayModelRaw;
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.utils.ConnectivityCheck;
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
-import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModelRaw;
-import net.mobindustry.calendarsample.calendar_from_scratch.utils.ConnectivityCheck;
+
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.joda.time.DateTime;
@@ -154,7 +158,7 @@ public class CalendarFragment extends Fragment {
     }
 
     /**
-     * Queries for holidays, parses them to ArrayList of {@link net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel} objects.
+     * Queries for holidays, parses them to ArrayList of {@link net.mobindustry.calendarfromscratch.calendar_from_scratch.model.HolidayModel} objects.
      * On success or fail - calls onHolidaysLoaded.
      */
     private void obtainHolidays() {

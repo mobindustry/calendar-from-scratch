@@ -1,4 +1,4 @@
-package net.mobindustry.calendarsample.calendar_from_scratch;
+package net.mobindustry.calendarfromscratch.calendar_from_scratch;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,13 +9,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.DayModel;
+import net.mobindustry.calendarfromscratch.calendar_from_scratch.model.HolidayModel;
 import net.mobindustry.calendarsample.R;
-import net.mobindustry.calendarsample.calendar_from_scratch.model.DayModel;
-import net.mobindustry.calendarsample.calendar_from_scratch.model.HolidayModel;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Fragment representing one month. To be managed by SlidingMonthAdapter inside ViewPager.

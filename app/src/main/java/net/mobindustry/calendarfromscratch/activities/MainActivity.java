@@ -1,9 +1,10 @@
-package net.mobindustry.calendarsample.activities;
+package net.mobindustry.calendarfromscratch.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
+
 import net.mobindustry.calendarsample.R;
 
 public class MainActivity extends ActionBarActivity {
